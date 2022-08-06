@@ -1,17 +1,18 @@
 ---
 title: "HDAT9600 Final Team Assignment"
-author: "insert your team name here"
+subtitle: "Please see course outline / 'Announcements' for submission deadline"
+author: "Team 2"
 date: "insert date of completion here"
-output:
-  pdf_document: default
-  html_document: default
-subtitle: Please see course outline / 'Announcements' for submission deadline
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 # leave this code here, but feel free to adjust the options or add some more
 # see the knitr documentation for details
 knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=12)
+library(dplyr)
+icu_patients_df0 <- readRDS("icu_patients_df0.rds")
+icu_patients_df1 <- readRDS("icu_patients_df1.rds")
 ```
 
 ## Instructions
@@ -172,7 +173,24 @@ In this task, you are required to develop a logistic regression model using the 
 7. Write a paragraph or two summarising the most important findings of your final model. Include the most important values from the statistical output, and a simple clinical interpretation.
 
 
-**Create your response to this task here, as a mixture of embedded (`knitr`) R code and any resulting outputs, and explanatory or commentary text.** 
+### Task 1
+
+I selected the predictor variables (age, length of stay, ICU type, SOFA score, fractional inspired O2, Glasgow Coma Score, heart rate and Mechanical ventilation respiration) to predict the risk of in-hospital death.
+
+```{r Task1-EDAi}
+# Examining the structure of the dataset
+str(icu_patients_df1)
+
+```
+
+```{r, Task1-EDAii}
+# Check the summary of the dataset
+summary(icu_patients_df1)
+
+# Print the names of variables with incomplete data
+names(which(colSums(! is.na(icu_patients_df1)) < 2061))
+
+```
 
 
 
