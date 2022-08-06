@@ -199,7 +199,7 @@ str(icu_sub)
 summary(icu_sub)
 
 # Check whether there is any missing data with the subset of variables
-colSums(! is.na(icu_sub))
+as.data.frame(colSums(! is.na(icu_sub)))
 
 # Print the names of variables with incomplete data
 names(which(colSums(! is.na(icu_sub)) < 2061))
@@ -208,9 +208,6 @@ names(which(colSums(! is.na(icu_sub)) < 2061))
 # Turn in_hospital_death variable to factor variables
 icu_sub$in_hospital_death <- as.factor(icu_sub$in_hospital_death)
 
-#
-icu_sub$in_hospital_death <- ifelse(icu_sub$in_hospital_death == 0, "Survivor", "Died in Hospital")
-
 ```
 
 
@@ -218,9 +215,50 @@ icu_sub$in_hospital_death <- ifelse(icu_sub$in_hospital_death == 0, "Survivor", 
 # for loop to produce all the plots to compare the distribution
  names <- colnames(icu_sub[-c(1:2)])
 plots <- for (column in names) {
-  print(ggplot(data = icu_sub, aes(x = icu_sub[,column], fill = in_hospital_death))+ geom_histogram() + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column) + facet_grid(in_hospital_death~., scales = "fixed"))
+  print(ggplot(data = icu_sub, aes(x = icu_sub[,column], fill = in_hospital_death))+ geom_histogram() + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column, fill = "Deaths in Hospital") + facet_grid(in_hospital_death~., scales = "fixed") + scale_fill_discrete(name = "Deaths in Hospital", labels = c("Survivor", "Died in Hospital")))
   }
 
+```
+
+```{r, Task1-age}
+# Fiting univariate logistic regression models
+age_glm <- glm(in_hospital_death ~ Age, family = binomial, data = icu_sub)
+summary(age_glm)
+
+```
+```{r, Task1-ICUType}
+Icu_type_glm <- glm(in_hospital_death ~ ICUType, family = binomial, data = icu_sub)
+summary(Icu_type_glm)
+```
+
+```{r, Task1-stay}
+stay_glm <- glm(in_hospital_death ~ Length_of_stay, family = binomial, data = icu_sub)
+summary(stay_glm)
+```
+
+```{r, Task1-SOFA}
+SOFA_glm <- glm(in_hospital_death ~ SOFA, family = binomial, data = icu_sub)
+summary(SOFA_glm)
+```
+
+```{r, Task1-FiO2}
+FiO2_glm <- glm(in_hospital_death ~ FiO2_max, family = binomial, data = icu_sub)
+summary(FiO2_glm)
+```
+
+```{r, Task1-RespRate}
+RespRate_glm <- glm(in_hospital_death ~ RespRate_min, family = binomial, data = icu_sub)
+summary(RespRate_glm)
+```
+
+```{r, Task1-HR}
+HR_glm <- glm(in_hospital_death ~ HR_min, family = binomial, data = icu_sub)
+summary(HR_glm)
+```
+
+```{r, Task1-GCS}
+GCS_glm <- glm(in_hospital_death ~  GCS_max, family = binomial, data = icu_sub)
+summary(GCS_glm)
 ```
 
 # Task 2
