@@ -175,20 +175,33 @@ In this task, you are required to develop a logistic regression model using the 
 
 ### Task 1
 
-I selected the predictor variables (age, length of stay, ICU type, SOFA score, fractional inspired O2, Glasgow Coma Score, heart rate and Mechanical ventilation respiration) to predict the risk of in-hospital death.
+We selected the predictor variables (age, length of stay, ICU type, SOFA score, fractional inspired oxygen (FiO2), Glasgow Coma Score (GCS), heart rate and respiration rate) to predict the risk of in-hospital death. Based on background research, we would expect that older patients, long length of hospital stay, certain types of ICU, high SOFA score, high FiO2, high GCS, low resting heart rate and low respiratory rate are indicators of deaths in hospital. 
+
 
 ```{r Task1-EDAi}
-# Examining the structure of the dataset
-str(icu_patients_df1)
+# Getting the summary statistics of the dataset
+summary(icu_patients_df1)
 
 ```
 
-```{r, Task1-EDAii}
+```{r Task1-EDAii}
+# Subsetting the ICU dataset into variables of interest
+icu_sub <- icu_patients_df1 %>% select(Age, ICUType, Length_of_stay, SOFA, FiO2_max, RespRate_min, HR_min, GCS_max)
+
+# Examining the structure of the subset of dataset
+str(icu_sub)
+
+```
+
+```{r, Task1-EDAiii}
 # Check the summary of the dataset
-summary(icu_patients_df1)
+summary(icu_sub)
+
+# Check whether there is any missing data with the subset of variables
+colSums(! is.na(icu_sub))
 
 # Print the names of variables with incomplete data
-names(which(colSums(! is.na(icu_patients_df1)) < 2061))
+names(which(colSums(! is.na(icu_sub)) < 2061))
 
 ```
 
@@ -207,7 +220,7 @@ In this task, you are required to develop a Cox proportional hazards survival mo
 
 3. Fit appropriate univariate Cox proportional hazards models.
 
-4. Fit an appropriate series of multivariable Cox proportional hazards models, justifying your approach. Assess each model you consider for goodness of fit and other relevant statistics.
+4. Fit an appropriate series of multivariable Cox proportional hazards models, justifying your approach. Assess each model you consider for goodness of fit and other relevant statistics. 
 
 5. Present your final model. Your final model should **not** include all the predictor variables, just a small subset of them, which you have selected based on statistical significance and/or background knowledge.
 
