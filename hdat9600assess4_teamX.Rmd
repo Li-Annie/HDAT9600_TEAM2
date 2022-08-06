@@ -204,17 +204,22 @@ colSums(! is.na(icu_sub))
 # Print the names of variables with incomplete data
 names(which(colSums(! is.na(icu_sub)) < 2061))
 
+
+# Turn in_hospital_death variable to factor variables
+icu_sub$in_hospital_death <- as.factor(icu_sub$in_hospital_death)
+
+#
+icu_sub$in_hospital_death <- ifelse(icu_sub$in_hospital_death == 0, "Survivor", "Died in Hospital")
+
 ```
 
 
 ```{r, Task1-EDAiv}
-
-plots <- for (i in 3:ncol(icu_sub)) {
-  names <- colnames(icu_sub[-c(1:2)])
-  for (column in names) {
-  print(ggplot(data = icu_sub, aes(x = icu_sub[,i], fill = in_hospital_death))+ geom_histogram() + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column) + facet_grid(in_hospital_death~., scales = "fixed"))
+# for loop to produce all the plots to compare the distribution
+ names <- colnames(icu_sub[-c(1:2)])
+plots <- for (column in names) {
+  print(ggplot(data = icu_sub, aes(x = icu_sub[,column], fill = in_hospital_death))+ geom_histogram() + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column) + facet_grid(in_hospital_death~., scales = "fixed"))
   }
-}
 
 ```
 
