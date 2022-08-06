@@ -11,6 +11,7 @@ output: html_document
 # see the knitr documentation for details
 knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=12)
 library(dplyr)
+library(ggplot2)
 icu_patients_df0 <- readRDS("icu_patients_df0.rds")
 icu_patients_df1 <- readRDS("icu_patients_df1.rds")
 ```
@@ -186,7 +187,7 @@ summary(icu_patients_df1)
 
 ```{r Task1-EDAii}
 # Subsetting the ICU dataset into variables of interest
-icu_sub <- icu_patients_df1 %>% select(Age, ICUType, Length_of_stay, SOFA, FiO2_max, RespRate_min, HR_min, GCS_max)
+icu_sub <- icu_patients_df1 %>% select(in_hospital_death, ICUType, Age, Length_of_stay, SOFA, FiO2_max, RespRate_min, HR_min, GCS_max)
 
 # Examining the structure of the subset of dataset
 str(icu_sub)
@@ -206,6 +207,16 @@ names(which(colSums(! is.na(icu_sub)) < 2061))
 ```
 
 
+```{r, Task1-EDAiv}
+
+plots <- for (i in 3:ncol(icu_sub)) {
+  names <- colnames(icu_sub[-c(1:2)])
+  for (column in names) {
+  print(ggplot(data = icu_sub, aes(x = icu_sub[,i], fill = in_hospital_death))+ geom_histogram() + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column) + facet_grid(in_hospital_death~., scales = "fixed"))
+  }
+}
+
+```
 
 # Task 2
 
