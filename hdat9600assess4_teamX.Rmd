@@ -15,7 +15,6 @@ library(ggplot2)
 library(arm)
 library(faraway)
 library(DescTools)
-options(scipen=999)
 icu_patients_df0 <- readRDS("icu_patients_df0.rds")
 icu_patients_df1 <- readRDS("icu_patients_df1.rds")
 ```
@@ -192,21 +191,21 @@ We selected the predictor variables (age, length of stay, ICU type, SOFA score, 
 
 **Background Research supporting the selection of predictor variables**
 
-Based on the article "Relationship between age and in-hospital mortality during 15,345,025 non-surgical hospitalizations" from the Archives of Medical Science, the findings support in hospital death to be associated with the age of the patients. In this study, older patients have a greater odds of dying in hospital than younger patients.  
+_Based on the article "Relationship between age and in-hospital mortality during 15,345,025 non-surgical hospitalizations" from the Archives of Medical Science, the findings support in hospital death to be associated with the age of the patients. In this study, older patients have a greater odds of dying in hospital than younger patients._    
 
-Another article, "Patient length of stay and mortality prediction: A survey" from PubMed suggests that the longer length of stay in hospital is a parameter linked to the severity of the health conditions, therefore may be associated with in hospital mortality.   
+_Another article, "Patient length of stay and mortality prediction: A survey" from PubMed suggests that the longer length of stay in hospital is a parameter linked to the severity of the health conditions, therefore may be associated with in hospital mortality._     
 
-In this article, "Infection as an independent risk factor for mortality in the surgical intensive care unit" from National Library of Medicine which evaluated mortality in hospital from surgical and medical ICU, points out that certain types of ICU are associated with high in hospital mortality.     
+_In this article, "Infection as an independent risk factor for mortality in the surgical intensive care unit" from National Library of Medicine which evaluated mortality in hospital from surgical and medical ICU, points out that certain types of ICU are associated with high in hospital mortality._     
 
-Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria, and qSOFA Score for In-Hospital Mortality Among Adults With Suspected Infection Admitted to the Intensive Care Unit" from PubMed propose that high SOFA scores are associated with higher in hospital mortality.  
+_Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria, and qSOFA Score for In-Hospital Mortality Among Adults With Suspected Infection Admitted to the Intensive Care Unit" from PubMed propose that high SOFA scores are associated with higher in hospital mortality._    
 
-According to "Severity of respiratory failure at admission and in-hospital mortality in patients with COVID-19: a prospective observational multicentre study" from BMJ reports high FiO2 is independently associated with in-hospital mortality. 
+_According to "Severity of respiratory failure at admission and in-hospital mortality in patients with COVID-19: a prospective observational multicentre study" from BMJ reports high FiO2 is independently associated with in-hospital mortality._   
 
-In addition, "In-hospital mortality and the Glasgow Coma Scale in the first 72 hours after traumatic brain injury" from SciELO suggests that low GCS scores are associated with in-hospital mortality.
+_In addition, "In-hospital mortality and the Glasgow Coma Scale in the first 72 hours after traumatic brain injury" from SciELO suggests that low GCS scores are associated with in-hospital mortality._  
 
-Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in patients with acute coronary syndromes" from PubMed propose that high heart rate can be associated with in-hospital mortality in certain sub-population of patients. 
+_Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in patients with acute coronary syndromes" from PubMed propose that high heart rate can be associated with in-hospital mortality in certain sub-population of patients._   
 
-Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between low respiratory rate and in hospital and short term mortality. 
+_Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between low respiratory rate and in hospital and short term mortality._   
 
 
 ```{r Task1-EDAii}
@@ -217,7 +216,7 @@ icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, L
 str(icu_sub)
 
 ```
-The subset ICU dataset contains 2061 observations of 9 variables. The outcome variable is death in hospital and the predictor variables are type of ICU, age, length of stay, SOFA scores, maximum FiO2, minimum respiration rate, maximum heart rate and minimum GCS.
+_The subset ICU dataset contains 2061 observations of 9 variables. The outcome variable is death in hospital and the predictor variables are type of ICU, age, length of stay, SOFA scores, maximum FiO2, minimum respiration rate, maximum heart rate and minimum GCS._  
 
 
 
@@ -246,7 +245,7 @@ plots <- for (column in names) {
   }
 
 ```
-Looking at the histograms, it is evident that majority of the patients did not die in the hospital and the distribution for all predictor variables except type of ICU for survivor and died in hospital are very similar. An interesting observation is that for the variable minimum respiration rate, the mean respiration rate is higher in those that died in hospital than those who survived. Another observation which aligns with the research is the predictor variable age, the mean age of patients is higher in the cohort that died in the hospital than those who survived. 
+_Looking at the histograms, it is evident that majority of the patients did not die in the hospital and the distribution for all predictor variables except type of ICU for survivor and died in hospital are very similar. An interesting observation is that for the variable minimum respiration rate, the mean respiration rate is higher in those that died in hospital than those who survived. Another observation which aligns with the research is the predictor variable age, the mean age of patients is higher in the cohort that died in the hospital than those who survived._  
 
 ```{r, Task1-age}
 # Fitting univariate logistic regression models
@@ -254,6 +253,7 @@ age_glm <- glm(in_hospital_death ~ Age, family = binomial, data = icu_sub)
 summary(age_glm)
 
 ```
+
 ```{r, Task1-ICUType}
 Icu_type_glm <- glm(in_hospital_death ~ ICUType, family = binomial, data = icu_sub)
 summary(Icu_type_glm)
@@ -300,8 +300,10 @@ for (model in glm_mod) {
   print(anova(null, model, test = "Chi"))
 }
 ```
-```{r, Task1-AIC}
+_From the analysis of deviance, it seems that the age, type of ICU, SOFA scores, minimum respiration rate, maximum heart rate and low GCS are significant predictors compared to the null model as their p-values are below 0.05._  
 
+```{r, Task1-AIC}
+# Using AIC for model selection
 full_mod <- glm(in_hospital_death~., family = binomial, data = icu_sub)
 aic_suggest_mod <- step(full_mod, trace = 1)
 summary(aic_suggest_mod)
@@ -311,12 +313,14 @@ summary(aic_suggest_mod)
 binnedplot(predict(aic_suggest_mod), residuals(aic_suggest_mod))
 ```
 ```{r, Task1-Pseudo-R2-full}
+options(scipen=999)
 # Checking the fit of the full model using Pseudo-R2
 PseudoR2(full_mod, which = "all")
 
 ```
 
 ```{r, Task1-Pseudo-R2-reduced}
+options(scipen=999)
 # Checking the fit of the reduced model using Pseudo-R2
 PseudoR2(aic_suggest_mod, which = "all")
 ```
