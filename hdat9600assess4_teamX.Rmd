@@ -188,7 +188,7 @@ summary(icu_patients_df1)
 ```
 We had a look at all the variables in the dataset before making a selection of 9 variables which we will investigate. 
 
-We selected the predictor variables (age, length of stay, ICU type, SOFA score, fractional inspired oxygen (FiO2), Glasgow Coma Score (GCS), heart rate and respiration rate) to predict the risk of in-hospital death.  
+We selected the predictor variables (age, length of stay, ICU type, SOFA score, maximum fractional inspired oxygen (FiO2), minimum Glasgow Coma Score (GCS), maximum heart rate and minimum respiration rate) to predict the risk of in-hospital death.  
 
 **Background Research supporting the selection of predictor variables**
 
@@ -204,20 +204,20 @@ According to "Severity of respiratory failure at admission and in-hospital morta
 
 In addition, "In-hospital mortality and the Glasgow Coma Scale in the first 72 hours after traumatic brain injury" from SciELO suggests that low GCS scores are associated with in-hospital mortality.
 
-Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in patients with acute coronary syndromes" from PubMed propose that heart rate can be associated with in-hospital mortality in certain sub-population of patients. 
+Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in patients with acute coronary syndromes" from PubMed propose that high heart rate can be associated with in-hospital mortality in certain sub-population of patients. 
 
-Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between respiratory rate and in hospital and short term mortality. 
+Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between low respiratory rate and in hospital and short term mortality. 
 
 
 ```{r Task1-EDAii}
 # Subsetting the ICU dataset into variables of interest
-icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, Length_of_stay, SOFA, FiO2_max, RespRate_min, HR_min, GCS_max)
+icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, Length_of_stay, SOFA, FiO2_max, RespRate_min, HR_max, GCS_min)
 
 # Examining the structure of the subset of dataset
 str(icu_sub)
 
 ```
-The subsetted ICU dataset contains 2061 observations of 9 variables. The outcome variable is death in hospital and the predictor variables are type of ICU, age, length of stay, SOFA scores, FiO2, respiration rate, heart rate and GCS.
+The subset ICU dataset contains 2061 observations of 9 variables. The outcome variable is death in hospital and the predictor variables are type of ICU, age, length of stay, SOFA scores, maximum FiO2, minimum respiration rate, maximum heart rate and minimum GCS.
 
 
 
@@ -246,7 +246,7 @@ plots <- for (column in names) {
   }
 
 ```
-
+Looking at the histograms, it is evident that majority of the patients did not die in the hospital and the distribution for all predictor variables except type of ICU for survivor and died in hospital are very similar. An interesting observation is that for the variable minimum respiration rate, the mean respiration rate is higher in those that died in hospital than those who survived. Another observation which aligns with the research is the predictor variable age, the mean age of patients is higher in the cohort that died in the hospital than those who survived. 
 
 ```{r, Task1-age}
 # Fitting univariate logistic regression models
@@ -280,12 +280,12 @@ summary(RespRate_glm)
 ```
 
 ```{r, Task1-HR}
-HR_glm <- glm(in_hospital_death ~ HR_min, family = binomial, data = icu_sub)
+HR_glm <- glm(in_hospital_death ~ HR_max, family = binomial, data = icu_sub)
 summary(HR_glm)
 ```
 
 ```{r, Task1-GCS}
-GCS_glm <- glm(in_hospital_death ~  GCS_max, family = binomial, data = icu_sub)
+GCS_glm <- glm(in_hospital_death ~  GCS_min, family = binomial, data = icu_sub)
 summary(GCS_glm)
 ```
 ```{r, Task1-Comparing GLM Models}
@@ -321,6 +321,9 @@ PseudoR2(full_mod, which = "all")
 PseudoR2(aic_suggest_mod, which = "all")
 ```
 ```{r, Task1-Brier score}
+# Changing the variable into factor so doesn't run into error when knitting
+icu_sub$in_hospital_death <- as.numeric(icu_sub$in_hospital_death)
+
 # Checking the goodness of fit of full model using Brier Score test
 pred_prob_full <- predict(full_mod, type="response")
 brier_score_full <- mean((pred_prob_full - icu_sub$in_hospital_death)^2)
@@ -332,9 +335,6 @@ brier_score_reduced <- mean((pred_prob_reduced - icu_sub$in_hospital_death)^2)
 brier_score_reduced
 ```
 ```{r, Task1-Diagnostic plots}
-# Changing the variable into factor so doesn't run into error when knitting
-icu_sub$in_hospital_death <- as.numeric(icu_sub$in_hospital_death)
-
 # Diagnostic plots of full model
 icu_sub %>% mutate(predicted_probability = predict(full_mod, type = "response"), linear_predictor = predict(full_mod)) %>%
  group_by(cut(linear_predictor, breaks=unique(quantile(linear_predictor, (1:50)/51)))) %>%
@@ -344,7 +344,7 @@ ggplot(aes(x=predicted_probability_bin,
            y=in_hospital_death_bin/n_bin, 
            ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
            ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
-  geom_point() + geom_linerange(colour="blue", alpha=0.3) + 
+  geom_point() + geom_linerange(colour="blue", alpha=0.3) + geom_abline(intercept=0, slope=1) +
   labs(x="Predicted probability (binned)",
        y="Observed proportion (in each bin)", title = "Diagnostic Plot of Full model")
 
@@ -357,7 +357,7 @@ ggplot(aes(x=predicted_probability_bin,
            y=in_hospital_death_bin/n_bin, 
            ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
            ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
-  geom_point() + geom_linerange(colour="blue", alpha=0.5) +
+  geom_point() + geom_linerange(colour="blue", alpha=0.5) + geom_abline(intercept=0, slope=1) +
   labs(x="Predicted probability (binned)",
        y="Observed proportion (in each bin)", title = "Diagnostic Plot of Reduced model") 
 ```
