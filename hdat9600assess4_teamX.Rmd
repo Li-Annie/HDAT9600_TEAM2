@@ -322,18 +322,20 @@ test_mod_glm2 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + G
     family = binomial, data = icu_sub)
 print(anova(aic_suggest_mod, test_mod_glm2, test = "Chi"))
 ```
-```{r, Task1-test model1}
+```{r, Task1-test model3}
 # analysis of deviance
 test_mod_glm3 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + HR_max,
     family = binomial, data = icu_sub)
 print(anova(aic_suggest_mod, test_mod_glm3, test = "Chi"))
 ```
-_The 3 analysis of deviance test suggest there are only 4 significant predictors of deaths in hospital as suggested by AIC and these are ICU type, age, SOFA scores and minimum respiration rate. 
+_The 3 analysis of deviance test suggest there are only 4 significant predictors of deaths in hospital as suggested by AIC and these are ICU type, age, SOFA scores and minimum respiration rate._   
 
 ```{r, Task1-binned residual}
 # Checking the model fit using binned residual plot
 binnedplot(predict(aic_suggest_mod), residuals(aic_suggest_mod))
 ```
+_The variance of the residuals in the binned residual plot seems to be constant and evenly distributed._  
+
 ```{r, Task1-Pseudo-R2-full}
 options(scipen=999)
 # Checking the fit of the full model using Pseudo-R2
@@ -346,6 +348,8 @@ options(scipen=999)
 # Checking the fit of the reduced model using Pseudo-R2
 PseudoR2(aic_suggest_mod, which = "all")
 ```
+_The Pseudo-R2 do not differ by that much from the full model and the reduced model. When the fit of the model is very similar, the reduced/simpler model is always preferred._  
+
 ```{r, Task1-Brier score}
 # Changing the variable into factor so doesn't run into error when knitting
 icu_sub$in_hospital_death <- as.numeric(icu_sub$in_hospital_death)
@@ -360,6 +364,8 @@ pred_prob_reduced <- predict(aic_suggest_mod, type = "response")
 brier_score_reduced <- mean((pred_prob_reduced - icu_sub$in_hospital_death)^2)
 brier_score_reduced
 ```
+_The Brier score also shows the full model is a better fit like the Pseudo-R2. Again, as the difference is very small, the reduced/simpler model is preferred._  
+
 ```{r, Task1-Diagnostic plots}
 # Diagnostic plots of full model
 icu_sub %>% mutate(predicted_probability = predict(full_mod, type = "response"), linear_predictor = predict(full_mod)) %>%
@@ -370,9 +376,8 @@ ggplot(aes(x=predicted_probability_bin,
            y=in_hospital_death_bin/n_bin, 
            ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
            ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
-  geom_point() + geom_linerange(colour="blue", alpha=0.3) + geom_abline(intercept=0, slope=1) +
-  labs(x="Predicted probability (binned)",
-       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Full model")
+  geom_point() + geom_linerange(colour="blue", alpha=0.3) + labs(x="Predicted probability (binned)",
+       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Full model") + geom_abline(intercept=0, slope=1)
 
 # Diagnostic plots of reduced model
 icu_sub %>% mutate(predicted_probability = predict(aic_suggest_mod, type = "response"), linear_predictor = predict(aic_suggest_mod)) %>%
@@ -383,9 +388,8 @@ ggplot(aes(x=predicted_probability_bin,
            y=in_hospital_death_bin/n_bin, 
            ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
            ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
-  geom_point() + geom_linerange(colour="blue", alpha=0.5) + geom_abline(intercept=0, slope=1) +
-  labs(x="Predicted probability (binned)",
-       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Reduced model") 
+  geom_point() + geom_linerange(colour="blue", alpha=0.5) + labs(x="Predicted probability (binned)",
+       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Reduced model") + geom_abline(intercept=0, slope=1) 
 ```
 
 # Task 2
