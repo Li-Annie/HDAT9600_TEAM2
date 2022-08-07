@@ -15,6 +15,8 @@ library(ggplot2)
 library(arm)
 library(faraway)
 library(DescTools)
+library(predtools)
+library(magrittr)
 options(scipen=999)
 icu_patients_df0 <- readRDS("icu_patients_df0.rds")
 icu_patients_df1 <- readRDS("icu_patients_df1.rds")
@@ -296,6 +298,48 @@ PseudoR2(full_mod, which = "all")
 # Checking the fit of the reduced model using Pseudo-R2
 PseudoR2(aic_suggest_mod, which = "all")
 ```
+```{r, Task1-Brier score}
+# Checking the goodness of fit of full model using Brier Score test
+pred_prob_full <- predict(full_mod, type="response")
+brier_score_full <- mean((pred_prob_full - icu_sub$in_hospital_death)^2)
+brier_score_full
+
+# Checking the goodness of fit of reduced model using Brier Score test
+pred_prob_reduced <- predict(aic_suggest_mod, type = "response")
+brier_score_reduced <- mean((pred_prob_reduced - icu_sub$in_hospital_death)^2)
+brier_score_reduced
+```
+```{r, Task1-Diagnostic plots}
+# Changing the variable into factor so doesn't run into error when knitting
+icu_sub$in_hospital_death <- as.numeric(icu_sub$in_hospital_death)
+
+# Diagnostic plots of full model
+icu_sub %>% mutate(predicted_probability = predict(full_mod, type = "response"), linear_predictor = predict(full_mod)) %>%
+ group_by(cut(linear_predictor, breaks=unique(quantile(linear_predictor, (1:50)/51)))) %>%
+summarise(in_hospital_death_bin=sum(in_hospital_death), predicted_probability_bin=mean(predicted_probability), n_bin=n()) %>%
+mutate(se_predicted_probability_bin=sqrt(predicted_probability_bin*(1 - predicted_probability_bin)/n_bin)) %>%
+ggplot(aes(x=predicted_probability_bin, 
+           y=in_hospital_death_bin/n_bin, 
+           ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
+           ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
+  geom_point() + geom_linerange(colour="blue", alpha=0.3) + 
+  labs(x="Predicted probability (binned)",
+       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Full model")
+
+# Diagnostic plots of reduced model
+icu_sub %>% mutate(predicted_probability = predict(aic_suggest_mod, type = "response"), linear_predictor = predict(aic_suggest_mod)) %>%
+ group_by(cut(linear_predictor, breaks=unique(quantile(linear_predictor, (1:50)/51)))) %>%
+summarise(in_hospital_death_bin=sum(in_hospital_death), predicted_probability_bin=mean(predicted_probability), n_bin=n()) %>%
+mutate(se_predicted_probability_bin=sqrt(predicted_probability_bin*(1 - predicted_probability_bin)/n_bin)) %>%
+ggplot(aes(x=predicted_probability_bin, 
+           y=in_hospital_death_bin/n_bin, 
+           ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
+           ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
+  geom_point() + geom_linerange(colour="blue", alpha=0.5) +
+  labs(x="Predicted probability (binned)",
+       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Reduced model") 
+```
+
 # Task 2
 
 In this task, you are required to develop a Cox proportional hazards survival model using the `icu_patients_df1` data set which adequately explains or predicts the length of survival indicated by the `Days` variable, with censoring as indicated by the `Status` variable.  You should fit a series of models, maybe three or four, evaluating each one, before you present your final model. Your final model should **not** include all the predictor variables, just a small subset of them, which you have selected based on statistical significance and/or background knowledge. Aim for between five and ten predictor variables (slightly more or fewer is OK). It is perfectly acceptable to include predictor variables in your final model which are not statistically significant, as long as you justify their inclusion on medical or physiological grounds (you will not be marked down if your medical justification is not exactly correct, but do you best). You should assess each model you consider for goodness of fit and other relevant statistics, and you should assess your final model for violations of assumptions and perform other diagnostics which you think are relevant (and modify the model if indicated, or at least comment on the possible impact of what your diagnostics show). Finally, re-fit your final model to the unimputed data frame (`icu_patients_df0.rds`) and comment on any differences you find.
