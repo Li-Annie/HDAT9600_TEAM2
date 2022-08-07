@@ -180,6 +180,14 @@ In this task, you are required to develop a logistic regression model using the 
 
 ### Task 1
 
+
+```{r Task1-EDAi}
+# Getting the summary statistics of the dataset
+summary(icu_patients_df1)
+
+```
+We had a look at all the variables in the dataset before making a selection of 9 variables which we will investigate. 
+
 We selected the predictor variables (age, length of stay, ICU type, SOFA score, fractional inspired oxygen (FiO2), Glasgow Coma Score (GCS), heart rate and respiration rate) to predict the risk of in-hospital death.  
 
 **Background Research supporting the selection of predictor variables**
@@ -200,11 +208,6 @@ Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in
 
 Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between respiratory rate and in hospital and short term mortality. 
 
-```{r Task1-EDAi}
-# Getting the summary statistics of the dataset
-summary(icu_patients_df1)
-
-```
 
 ```{r Task1-EDAii}
 # Subsetting the ICU dataset into variables of interest
@@ -214,6 +217,9 @@ icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, L
 str(icu_sub)
 
 ```
+The subsetted ICU dataset contains 2061 observations of 9 variables. The outcome variable is death in hospital and the predictor variables are type of ICU, age, length of stay, SOFA scores, FiO2, respiration rate, heart rate and GCS.
+
+
 
 ```{r, Task1-EDAiii}
 # Check the summary of the dataset
@@ -230,7 +236,7 @@ names(which(colSums(! is.na(icu_sub)) < 2061))
 icu_sub$in_hospital_death <- as.factor(icu_sub$in_hospital_death)
 
 ```
-
+The subset of ICU dataset has no missing data. 
 
 ```{r, Task1-EDAiv}
 # for loop to produce all the plots to compare the distribution
@@ -240,6 +246,7 @@ plots <- for (column in names) {
   }
 
 ```
+
 
 ```{r, Task1-age}
 # Fitting univariate logistic regression models
