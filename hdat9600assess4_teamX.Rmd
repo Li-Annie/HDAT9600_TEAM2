@@ -221,7 +221,7 @@ plots <- for (column in names) {
 ```
 
 ```{r, Task1-age}
-# Fiting univariate logistic regression models
+# Fitting univariate logistic regression models
 age_glm <- glm(in_hospital_death ~ Age, family = binomial, data = icu_sub)
 summary(age_glm)
 
@@ -259,6 +259,21 @@ summary(HR_glm)
 ```{r, Task1-GCS}
 GCS_glm <- glm(in_hospital_death ~  GCS_max, family = binomial, data = icu_sub)
 summary(GCS_glm)
+```
+```{r, Task1-Comparing GLM Models}
+# Null model 
+null <- glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
+
+# for loop to compare null model against each individual univariate logistic regression models
+glm_mod <- list(age_glm, Icu_type_glm, stay_glm, SOFA_glm, FiO2_glm, RespRate_glm, HR_glm, GCS_glm)
+# Comparing different models
+for (model in glm_mod) {
+  print(anova(null, model, test = "Chi"))
+}
+```
+
+```{r, Task1}
+age <- print(anova(null, age_glm, test = "Chi"))
 ```
 
 # Task 2
