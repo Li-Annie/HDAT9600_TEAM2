@@ -308,6 +308,28 @@ full_mod <- glm(in_hospital_death~., family = binomial, data = icu_sub)
 aic_suggest_mod <- step(full_mod, trace = 1)
 summary(aic_suggest_mod)
 ```
+_The AIC suggested models only contain four predictor variables which are type of ICU, age, SOFA score and minimum respiration rate. Although this is the best model according to AIC indication, we still wanted to include maximum heart rate and minimum GCS and complete 3 more tests of analysis of deviance._
+
+```{r, Task1-test model1}
+# analysis of deviance
+test_mod_glm1 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + HR_max + GCS_min,
+    family = binomial, data = icu_sub)
+print(anova(aic_suggest_mod, test_mod_glm1, test = "Chi"))
+```
+```{r, Task1-test model2}
+# analysis of deviance
+test_mod_glm2 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + GCS_min,
+    family = binomial, data = icu_sub)
+print(anova(aic_suggest_mod, test_mod_glm2, test = "Chi"))
+```
+```{r, Task1-test model1}
+# analysis of deviance
+test_mod_glm3 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + HR_max,
+    family = binomial, data = icu_sub)
+print(anova(aic_suggest_mod, test_mod_glm3, test = "Chi"))
+```
+_The 3 analysis of deviance test suggest there are only 4 significant predictors of deaths in hospital as suggested by AIC and these are ICU type, age, SOFA scores and minimum respiration rate. 
+
 ```{r, Task1-binned residual}
 # Checking the model fit using binned residual plot
 binnedplot(predict(aic_suggest_mod), residuals(aic_suggest_mod))
