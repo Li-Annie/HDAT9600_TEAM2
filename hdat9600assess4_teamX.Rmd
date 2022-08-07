@@ -15,8 +15,6 @@ library(ggplot2)
 library(arm)
 library(faraway)
 library(DescTools)
-library(predtools)
-library(magrittr)
 options(scipen=999)
 icu_patients_df0 <- readRDS("icu_patients_df0.rds")
 icu_patients_df1 <- readRDS("icu_patients_df1.rds")
@@ -177,13 +175,30 @@ In this task, you are required to develop a logistic regression model using the 
 
 6. For your final model, present a set of diagnostic statistics and/or charts and comment on them.
 
-7. Write a paragraph or two summarising the most important findings of your final model. Include the most important values from the statistical output, and a simple clinical interpretation.
+7. Write a paragraph or two summarizing the most important findings of your final model. Include the most important values from the statistical output, and a simple clinical interpretation.
 
 
 ### Task 1
 
-We selected the predictor variables (age, length of stay, ICU type, SOFA score, fractional inspired oxygen (FiO2), Glasgow Coma Score (GCS), heart rate and respiration rate) to predict the risk of in-hospital death. Based on background research, we would expect that older patients, long length of hospital stay, certain types of ICU, high SOFA score, high FiO2, high GCS, low resting heart rate and low respiratory rate are indicators of deaths in hospital. 
+We selected the predictor variables (age, length of stay, ICU type, SOFA score, fractional inspired oxygen (FiO2), Glasgow Coma Score (GCS), heart rate and respiration rate) to predict the risk of in-hospital death.  
 
+**Background Research supporting the selection of predictor variables**
+
+Based on the article "Relationship between age and in-hospital mortality during 15,345,025 non-surgical hospitalizations" from the Archives of Medical Science, the findings support in hospital death to be associated with the age of the patients. In this study, older patients have a greater odds of dying in hospital than younger patients.  
+
+Another article, "Patient length of stay and mortality prediction: A survey" from PubMed suggests that the longer length of stay in hospital is a parameter linked to the severity of the health conditions, therefore may be associated with in hospital mortality.   
+
+In this article, "Infection as an independent risk factor for mortality in the surgical intensive care unit" from National Library of Medicine which evaluated mortality in hospital from surgical and medical ICU, points out that certain types of ICU are associated with high in hospital mortality.     
+
+Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria, and qSOFA Score for In-Hospital Mortality Among Adults With Suspected Infection Admitted to the Intensive Care Unit" from PubMed propose that high SOFA scores are associated with higher in hospital mortality.  
+
+According to "Severity of respiratory failure at admission and in-hospital mortality in patients with COVID-19: a prospective observational multicentre study" from BMJ reports high FiO2 is independently associated with in-hospital mortality. 
+
+In addition, "In-hospital mortality and the Glasgow Coma Scale in the first 72 hours after traumatic brain injury" from SciELO suggests that low GCS scores are associated with in-hospital mortality.
+
+Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in patients with acute coronary syndromes" from PubMed propose that heart rate can be associated with in-hospital mortality in certain sub-population of patients. 
+
+Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between respiratory rate and in hospital and short term mortality. 
 
 ```{r Task1-EDAi}
 # Getting the summary statistics of the dataset
