@@ -377,7 +377,8 @@ ggplot(aes(x=predicted_probability_bin,
            ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
            ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
   geom_point() + geom_linerange(colour="blue", alpha=0.3) + labs(x="Predicted probability (binned)",
-       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Full model") + geom_abline(intercept=0, slope=1)
+       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Full model")
+
 
 # Diagnostic plots of reduced model
 icu_sub %>% mutate(predicted_probability = predict(aic_suggest_mod, type = "response"), linear_predictor = predict(aic_suggest_mod)) %>%
@@ -389,7 +390,7 @@ ggplot(aes(x=predicted_probability_bin,
            ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
            ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
   geom_point() + geom_linerange(colour="blue", alpha=0.5) + labs(x="Predicted probability (binned)",
-       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Reduced model") + geom_abline(intercept=0, slope=1) 
+       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Reduced model") 
 ```
 
 # Task 2
