@@ -185,9 +185,11 @@ In this task, you are required to develop a logistic regression model using the 
 summary(icu_patients_df1)
 
 ```
-We had a look at all the variables in the dataset before making a selection of 9 variables which we will investigate. 
+_We had a look at all the variables in the dataset before making a selection of 9 variables which we will investigate._  
 
-We selected the predictor variables (age, length of stay, ICU type, SOFA score, maximum fractional inspired oxygen (FiO2), minimum Glasgow Coma Score (GCS), maximum heart rate and minimum respiration rate) to predict the risk of in-hospital death.  
+_We selected the predictor variables (age, length of stay, ICU type, SOFA score, maximum fractional inspired oxygen (FiO2), minimum Glasgow Coma Score (GCS), maximum heart rate and minimum respiration rate) to predict the risk of in-hospital death._  
+
+_An interesting finding with the summary statistics is that there might be issues with the data quality. As seen in the summary statistics of length of stay and SOFA scores, the minimum value is negative which is not possible as length of stay cannot be negative and SOFA scores range from 0-24._   
 
 **Background Research supporting the selection of predictor variables**
 
@@ -343,6 +345,8 @@ _After checking the summary statistics for the logistic regression model includi
 # Refitting the model with one interaction term 
 reduced_interactions2 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + 
     ICUType:SOFA, family = binomial, data = icu_sub)
+summary(reduced_interactions2)
+
 # Conducting an analysis of deviance
 print(anova(aic_suggest_mod, reduced_interactions2, test = "Chi"))
 ```
@@ -371,7 +375,7 @@ PseudoR2(reduced_interactions2, which = "all")
 _The Pseudo-R2 is slightly better in the model with the interaction compared to the one without as the Pseudo R2 values are slightly larger meaning that the model with interaction has a slight better fit._  
 
 ```{r, Task1-Brier score}
-# Changing the variable into factor so doesn't run into error when knitting
+# Changing the variable into numeric so doesn't run into error when knitting
 icu_sub$in_hospital_death <- as.numeric(icu_sub$in_hospital_death)
 
 # Checking the goodness of fit of reduced model using Brier Score test
@@ -386,7 +390,25 @@ brier_score_reduced
 ```
 _The difference in Brier scores between the two is very small, therefore the reduced model with interaction is preferred based on the analysis of deviance conducted earlier._
 
+```{r, refit model to unimputed data}
+unimputed <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + 
+    ICUType:SOFA, family = binomial, data = icu_patients_df0)
+summary(unimputed)
+```
+```{r, Task1-p-value reduced unimputed}
+# calculate p-value 
+(p_unimputed <- 1 - pchisq(unimputed$null.deviance - unimputed$deviance, unimputed$df.null - unimputed$df.residual))
+```
 
+```{r, Task1-p-value reduced imputed}
+# Changing the variable into factor so doesn't run into error when knitting
+icu_sub$in_hospital_death <- as.factor(icu_sub$in_hospital_death)
+
+reduced_null <-glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
+
+# calculate p-value 
+print(anova(reduced_null, reduced_interactions2, test = "Chi"))
+```
 
 # Task 2
 
