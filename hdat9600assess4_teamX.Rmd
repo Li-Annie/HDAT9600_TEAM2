@@ -308,7 +308,9 @@ full_mod <- glm(in_hospital_death~., family = binomial, data = icu_sub)
 aic_suggest_mod <- step(full_mod, trace = 1)
 summary(aic_suggest_mod)
 ```
-_The AIC suggested models only contain four predictor variables which are type of ICU, age, SOFA score and minimum respiration rate. Although this is the best model according to AIC indication, we still wanted to include maximum heart rate and minimum GCS and complete 3 more tests of analysis of deviance._
+
+_The AIC suggested models only contain four predictor variables which are type of ICU, age, SOFA score and minimum respiration rate. Although this is the best model according to AIC indication, we still wanted to include maximum heart rate and minimum GCS and complete 3 more tests of analysis of deviance to compare the models._
+
 
 ```{r, Task1-test model1}
 # analysis of deviance
@@ -330,68 +332,61 @@ print(anova(aic_suggest_mod, test_mod_glm3, test = "Chi"))
 ```
 _The 3 analysis of deviance test suggest there are only 4 significant predictors of deaths in hospital as suggested by AIC and these are ICU type, age, SOFA scores and minimum respiration rate._   
 
+```{r, Task1- interactions}
+# Checking if the reduced model is better fitted with interactions according to the AIC
+(reduced_interactions <-stepAIC(aic_suggest_mod, direction="both", scope=list(lower=~1, upper=~.^2), trace=F, data=icu_sub))
+summary(reduced_interactions)
+```
+_After checking the summary statistics for the logistic regression model including the 2 interactions, the age:SOFA interaction have a p-value above 0.05, which means that it is not statistically significant. Therefore, it is reasonable to drop this interaction._
+
+```{r, Task1- interactions comparison}
+# Refitting the model with one interaction term 
+reduced_interactions2 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + 
+    ICUType:SOFA, family = binomial, data = icu_sub)
+# Conducting an analysis of deviance
+print(anova(aic_suggest_mod, reduced_interactions2, test = "Chi"))
+```
+_It seems that the model including the interaction term is preferred over the model without the interaction as shown by the p-value of 0.02156._
+
+
 ```{r, Task1-binned residual}
 # Checking the model fit using binned residual plot
-binnedplot(predict(aic_suggest_mod), residuals(aic_suggest_mod))
+binnedplot(predict(reduced_interactions2), residuals(aic_suggest_mod))
 ```
 _The variance of the residuals in the binned residual plot seems to be constant and evenly distributed._  
 
-```{r, Task1-Pseudo-R2-full}
-options(scipen=999)
-# Checking the fit of the full model using Pseudo-R2
-PseudoR2(full_mod, which = "all")
-
-```
-
-```{r, Task1-Pseudo-R2-reduced}
+```{r, Task1-Pseudo-R2-reduced model}
 options(scipen=999)
 # Checking the fit of the reduced model using Pseudo-R2
 PseudoR2(aic_suggest_mod, which = "all")
 ```
-_The Pseudo-R2 do not differ by that much from the full model and the reduced model. When the fit of the model is very similar, the reduced/simpler model is always preferred._  
+
+```{r, Task1-Pseudo-R2-reduced model with interaction}
+options(scipen=999)
+# Checking the fit of the full model using Pseudo-R2
+PseudoR2(reduced_interactions2, which = "all")
+
+```
+
+_The Pseudo-R2 is slightly better in the model with the interaction compared to the one without as the Pseudo R2 values are slightly larger meaning that the model with interaction has a slight better fit._  
 
 ```{r, Task1-Brier score}
 # Changing the variable into factor so doesn't run into error when knitting
 icu_sub$in_hospital_death <- as.numeric(icu_sub$in_hospital_death)
 
-# Checking the goodness of fit of full model using Brier Score test
-pred_prob_full <- predict(full_mod, type="response")
-brier_score_full <- mean((pred_prob_full - icu_sub$in_hospital_death)^2)
-brier_score_full
-
 # Checking the goodness of fit of reduced model using Brier Score test
 pred_prob_reduced <- predict(aic_suggest_mod, type = "response")
 brier_score_reduced <- mean((pred_prob_reduced - icu_sub$in_hospital_death)^2)
 brier_score_reduced
+
+# Checking the goodness of fit of reduced model with interaction using Brier Score test
+pred_prob_reduced_interactions2 <- predict(reduced_interactions2, type = "response")
+brier_score_reduced <- mean((pred_prob_reduced_interactions2 - icu_sub$in_hospital_death)^2)
+brier_score_reduced
 ```
-_The Brier score also shows the full model is a better fit like the Pseudo-R2. Again, as the difference is very small, the reduced/simpler model is preferred._  
-
-```{r, Task1-Diagnostic plots}
-# Diagnostic plots of full model
-icu_sub %>% mutate(predicted_probability = predict(full_mod, type = "response"), linear_predictor = predict(full_mod)) %>%
- group_by(cut(linear_predictor, breaks=unique(quantile(linear_predictor, (1:50)/51)))) %>%
-summarise(in_hospital_death_bin=sum(in_hospital_death), predicted_probability_bin=mean(predicted_probability), n_bin=n()) %>%
-mutate(se_predicted_probability_bin=sqrt(predicted_probability_bin*(1 - predicted_probability_bin)/n_bin)) %>%
-ggplot(aes(x=predicted_probability_bin, 
-           y=in_hospital_death_bin/n_bin, 
-           ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
-           ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
-  geom_point() + geom_linerange(colour="blue", alpha=0.3) + labs(x="Predicted probability (binned)",
-       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Full model")
+_The difference in Brier scores between the two is very small, therefore the reduced model with interaction is preferred based on the analysis of deviance conducted earlier._
 
 
-# Diagnostic plots of reduced model
-icu_sub %>% mutate(predicted_probability = predict(aic_suggest_mod, type = "response"), linear_predictor = predict(aic_suggest_mod)) %>%
- group_by(cut(linear_predictor, breaks=unique(quantile(linear_predictor, (1:50)/51)))) %>%
-summarise(in_hospital_death_bin=sum(in_hospital_death), predicted_probability_bin=mean(predicted_probability), n_bin=n()) %>%
-mutate(se_predicted_probability_bin=sqrt(predicted_probability_bin*(1 - predicted_probability_bin)/n_bin)) %>%
-ggplot(aes(x=predicted_probability_bin, 
-           y=in_hospital_death_bin/n_bin, 
-           ymin=in_hospital_death_bin/n_bin - 1.96*se_predicted_probability_bin,
-           ymax=in_hospital_death_bin/n_bin + 1.96*se_predicted_probability_bin)) +
-  geom_point() + geom_linerange(colour="blue", alpha=0.5) + labs(x="Predicted probability (binned)",
-       y="Observed proportion (in each bin)", title = "Diagnostic Plot of Reduced model") 
-```
 
 # Task 2
 
