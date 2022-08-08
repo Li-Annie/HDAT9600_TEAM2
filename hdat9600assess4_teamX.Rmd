@@ -409,6 +409,12 @@ reduced_null <-glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
 # calculate p-value 
 print(anova(reduced_null, reduced_interactions2, test = "Chi"))
 ```
+_Looking through the summary statistics and p-values of the imputed and the unimputed datasets, the beta estimates of the predictor variables altered slightly, and the ICU (Cardiac Surgery Recovery Unit) and SOFA score interaction became insignificant in the unimputed dataset. The AIC for the unimputed dataset is 286.33 which is much better than the AIC for the imputed dataset of 1475.3. This means that the model is a better fit for the unimputed dataset._  
+
+**Summary Findings**  
+
+_After comparing different models, the final model we have fitted contains the predictor variables (type of ICU, age, SOFA scores and minimum respiration rate) and an interaction between type of ICU and SOFA scores. The p-value is 0 if rounded to 3 decimal places which suggests that the model is better than the null model._   
+_Through the analysis of deviance, it is apparent that the model with an interaction is the preferred model over the one without as shown by the p-value of 0.02156. This is also confirmed by the Pseudo R2 values. Although the Brier Scores show the model without the interaction has a slightly better fit, but the differences is negligible if rounded to 3 decimal places where both values would be 1.107. The binned residual plot also did not raise any concerns as the variance of the residuals in the binned residual plot seems to be constant and evenly distributed. In conclusion, the findings of this study suggests that the in-hospital mortality rate is associated with type of ICU, age of the patient, SOFA scores and minimum respiration rate out of the initial subset of the predictor variables that were selected._  
 
 # Task 2
 
