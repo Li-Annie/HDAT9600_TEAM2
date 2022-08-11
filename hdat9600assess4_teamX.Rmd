@@ -615,7 +615,7 @@ The explanatory variables I will use to predict survival will include:
 -   the `Age` demographic
 
 -   important vital signs: `HR_min`, `RespRate_min`, `SaO2_max`,
-    `SysABP_max`, `Temp_max`, `GCS_max`, `Urine_max`
+    `NiSysABP_max`, `Temp_max`, `GCS_max`, `Urine_max`
 
 -   important biochemical markers chosen based on clinical experience:
     `Lactate_max`, `HCT_max`, `Creatinine_max`, `Creatinine_max`
@@ -626,6 +626,12 @@ predictor variables, and the outcome variables `Days` (survival) and
 
 ```{r, Task2-subset}
 icu_sub2 <- icu_patients_df1 %>% dplyr::select(Days, Status, Age, HR_min, RespRate_min, SaO2_max, SysABP_max, Temp_max, GCS_max, Urine_max, Lactate_max, HCT_min, Creatinine_max, Na_max)
+```
+
+```{r}
+nrow(icu_sub2)
+as.data.frame(colSums(is.na(icu_sub2)))
+icu_sub2c <- icu_sub2[!is.na(icu_sub2$SysABP_max),]
 ```
 
 A brief exploratory data analysis is performed on the variables of
@@ -730,16 +736,60 @@ We now fit some multivariate models.
 2.  Only those significant in the univariate models
 
 ```{r coxmod_mv1}
-coxmod_mv_all <- coxph(surv_object ~ Age + HR_min + RespRate_min + SaO2_max + SysABP_max + Temp_max + GCS_max + Urine_max + Lactate_max + HCT_min + Creatinine_max + Na_max, data=icu_sub2)
-coxmod_mv_uni <- coxph(surv_object ~ Age + RespRate_min + SysABP_max + Temp_max + GCS_max + Urine_max + Lactate_max + Creatinine_max, data=icu_sub2)
+surv_object_c <- Surv(icu_sub2c$Days, icu_sub2c$Status)
+coxmod_mv_all <- coxph(surv_object_c ~ Age + HR_min + RespRate_min + SaO2_max + SysABP_max + Temp_max + GCS_max + Urine_max + Lactate_max + HCT_min + Creatinine_max + Na_max, data=icu_sub2c)
+coxmod_mv_uni <- coxph(surv_object_c ~ Age + RespRate_min + SysABP_max + Temp_max + GCS_max + Urine_max + Lactate_max + Creatinine_max, data=icu_sub2c)
 ```
 
 ```{r coxmod_mv_all}
-summary(coxmod_mv_all)
+sum_all <- summary(coxmod_mv_all)
+sum_all
 ```
 
 ```{r coxmod_mv_uni}
-summary(coxmod_mv_uni)
+sum_uni <- summary(coxmod_mv_uni)
+sum_uni
+```
+
+```{r coxmod_mv_red}
+#coxmod_mv_red <- coxph(surv_object ~ Age + Temp_max + GCS_max + Urine_max + Lactate_max + Creatinine_max, data=icu_sub2)
+#summary(coxmod_mv_red)
+```
+
+```{r coxmod_mv_redc}
+coxmod_mv_redc <- coxph(surv_object_c ~ Age + Temp_max + GCS_max + Urine_max + Lactate_max + Creatinine_max, data=icu_sub2c)
+sum_redc <- summary(coxmod_mv_redc)
+sum_redc
+```
+
+```{r coxmod_mv_art}
+coxmod_mv_art <- coxph(surv_object_c ~ Age + RespRate_min + SysABP_max + Temp_max + GCS_max + Urine_max + Lactate_max + HCT_min + Creatinine_max + Na_max, data=icu_sub2c)
+sum_art <- summary(coxmod_mv_art)
+sum_art
+```
+
+```{r anova}
+anova(coxmod_mv_all, coxmod_mv_uni, coxmod_mv_redc, coxmod_mv_art)
+```
+
+Unsure if this means I should prefer Model 1 over the others?
+
+Model 2 is preferred, `coxmod_mv_uni`.
+
+```{r AIC}
+mod1_AIC <- 2*(sum_all$logtest["df"])-2*sum_all$loglik[2]
+mod2_AIC <- 2*(sum_uni$logtest["df"])-2*sum_uni$loglik[2]
+mod3_AIC <- 2*(sum_redc$logtest["df"])-2*sum_redc$loglik[2]
+mod4_AIC <- 2*(sum_art$logtest["df"])-2*sum_art$loglik[2]
+mod1_AIC
+mod2_AIC
+mod3_AIC
+mod4_AIC
+```
+
+```{r}
+propmv2 <- cox.zph(coxmod_mv_uni)
+propmv2
 ```
 
 ### Hints
