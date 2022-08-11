@@ -4,12 +4,15 @@ subtitle: "Please see course outline / 'Announcements' for submission deadline"
 author: "Team 2"
 date: "insert date of completion here"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
 # leave this code here, but feel free to adjust the options or add some more
 # see the knitr documentation for details
-knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=12)
+  knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=12)
 library(dplyr)
 library(ggplot2)
 library(arm)
@@ -21,194 +24,296 @@ icu_patients_df1 <- readRDS("icu_patients_df1.rds")
 
 ## Instructions
 
-* This file (hdat9600assess4_teamX.Rmd) is the R Markdown document in which you need to complete your HDAT9600 final team assignment.
-* You should rename the file by replacing 'X' with your team number.
-* This assignment is assessed and will count for 30% of the total course marks.
-* The assignment comprises two tasks. The first task will focus on logistic regression, and the second task will focus on survival analysis.
-* There is no word limit, nor limit on the length of your submitted Rmarkdown (i.e. this file) document.
-* The **rendered** html document, were it to be printed, should be **no more** than about 10 A4 pages in length.
-* Your html rendered document should include sufficient code chunks, output, and visual display as necessary to support your discursive commentary addressing each task. You may therefore wish to **suppress some of the contents** of your Rmarkdown file from appearing within the rendered document.
-* The rendered (html) document will be the submission primarily considered when awarding credit. However, the Rmarkdown file may also be considered as deemed appropriate.
-* <strong> Excessively long reports will be penalised </strong> by cessation of awarding of credit after roughly 10 pages of content.
-* All tasks are intended to be completed as a team. Have fun discussing the tasks and working together.
+-   This file (hdat9600assess4_teamX.Rmd) is the R Markdown document in
+    which you need to complete your HDAT9600 final team assignment.
+-   You should rename the file by replacing 'X' with your team number.
+-   This assignment is assessed and will count for 30% of the total
+    course marks.
+-   The assignment comprises two tasks. The first task will focus on
+    logistic regression, and the second task will focus on survival
+    analysis.
+-   There is no word limit, nor limit on the length of your submitted
+    Rmarkdown (i.e. this file) document.
+-   The **rendered** html document, were it to be printed, should be
+    **no more** than about 10 A4 pages in length.
+-   Your html rendered document should include sufficient code chunks,
+    output, and visual display as necessary to support your discursive
+    commentary addressing each task. You may therefore wish to
+    **suppress some of the contents** of your Rmarkdown file from
+    appearing within the rendered document.
+-   The rendered (html) document will be the submission primarily
+    considered when awarding credit. However, the Rmarkdown file may
+    also be considered as deemed appropriate.
+-   <strong> Excessively long reports will be penalised </strong> by
+    cessation of awarding of credit after roughly 10 pages of content.
+-   All tasks are intended to be completed as a team. Have fun
+    discussing the tasks and working together.
 
-Don't hesitate to ask the course convenor for help via OpenLearning. The course instructor are happy to point you in the right direction and to make suggestions, but they won't, of course, complete your assessment for you!
-
+Don't hesitate to ask the course convenor for help via OpenLearning. The
+course instructor are happy to point you in the right direction and to
+make suggestions, but they won't, of course, complete your assessment
+for you!
 
 ## Data for this assessment
 
-The data used for this assessment consist of records from Intensive Care Unit (ICU) hospital stays in the USA. All patients were adults who were admitted for a wide variety of reasons. ICU stays of less than 48 hours have been excluded. 
+The data used for this assessment consist of records from Intensive Care
+Unit (ICU) hospital stays in the USA. All patients were adults who were
+admitted for a wide variety of reasons. ICU stays of less than 48 hours
+have been excluded.
 
-The source data for the assessment are data made freely available for the 2012 MIT PhysioNet/Computing for Cardiology Challenge. Details are provided [here](https://physionet.org/challenge/2012/). Training Set A data have been used. The original data has been modified and assembled to suit the purpose of this assessment. While not required for the purposes of this assignment, full details of the preparatory work can be found in the 'hdat9600assess4_final_data_prep' file.
+The source data for the assessment are data made freely available for
+the 2012 MIT PhysioNet/Computing for Cardiology Challenge. Details are
+provided [here](https://physionet.org/challenge/2012/). Training Set A
+data have been used. The original data has been modified and assembled
+to suit the purpose of this assessment. While not required for the
+purposes of this assignment, full details of the preparatory work can be
+found in the 'hdat9600assess4_final_data_prep' file.
 
 The dataframe consists of 120 variables, which are defined as follows:
 
 #### Patient Descriptor Variables
-<li> <em>RecordID:</em>            a unique integer for each ICU stay</li>
-<li> <em>Age:</em>                 years</li>
-<li> <em>Gender:</em>              male/female</li>
-<li> <em>Height:</em>              cm</li>
-<li> <em>ICUType:</em>             Coronary Care Unit; Cardiac Surgery Recovery Unit; Medical ICU; Surgical ICU</li>
-<li> <em>Length_of_stay:</em>      The number of days between the patient’s admission to the ICU and the end of hospitalisation</li>
-<li> <em>Survival:</em>            The number of days between ICU admission and death for patients who died</li>
 
+<li><em>RecordID:</em> a unique integer for each ICU stay</li>
+
+<li><em>Age:</em> years</li>
+
+<li><em>Gender:</em> male/female</li>
+
+<li><em>Height:</em> cm</li>
+
+<li><em>ICUType:</em> Coronary Care Unit; Cardiac Surgery Recovery Unit;
+Medical ICU; Surgical ICU</li>
+
+<li><em>Length_of_stay:</em> The number of days between the patient's
+admission to the ICU and the end of hospitalisation</li>
+
+<li><em>Survival:</em> The number of days between ICU admission and
+death for patients who died</li>
 
 #### Outcome Variables
-<li> <em>in_hospital_death:</em>   0:survivor/1:died in-hospital **this is the outcome variable for Task 1: Logistic Regression**</li>
-<li> <em>Status:</em>              True/False **this is the censoring variable for Task 2: Survival Analysis**</li>
-<li> <em>Days:</em>                Length of survival (in days) **this is the survival time variable for Task 2: Survival Analysis**</li>
 
+<li><em>in_hospital_death:</em> 0:survivor/1:died in-hospital **this is
+the outcome variable for Task 1: Logistic Regression**</li>
+
+<li><em>Status:</em> True/False **this is the censoring variable for
+Task 2: Survival Analysis**</li>
+
+<li><em>Days:</em> Length of survival (in days) **this is the survival
+time variable for Task 2: Survival Analysis**</li>
 
 #### Clinical Variables
-<em>Use the hyperlinks below to find out more about the clinical meaning of each variable.</em>
-The first two clinical variables are summary scores that are used to assess patient condition and risk.
 
-* SAPS-I score - Simplified Acute Physiological Score [Le Gall et al., 1984](http://www.ncbi.nlm.nih.gov/pubmed/6499483)
-* SOFA score - Sequential Organ Failure Assessment [Ferreira et al., 2001](http://www.ncbi.nlm.nih.gov/pubmed/11594901)
+<em>Use the hyperlinks below to find out more about the clinical meaning
+of each variable.</em> The first two clinical variables are summary
+scores that are used to assess patient condition and risk.
 
-###
+-   SAPS-I score - Simplified Acute Physiological Score [Le Gall et al.,
+    1984](http://www.ncbi.nlm.nih.gov/pubmed/6499483)
+-   SOFA score - Sequential Organ Failure Assessment [Ferreira et al.,
+    2001](http://www.ncbi.nlm.nih.gov/pubmed/11594901)
 
-The following 36 clinical measures were assessed at multiple timepoints during each patient's ICU stay. For each of the 36 clinical measures, you are given 3 summary variables: a) The minimum value during the first 24 hours in ICU (_min), b) The maximum value during the first 24 hours in ICU (_max), and c) The difference between the mean and the most extreme values during the first 24 hours in ICU (_diff). For example, for the clinical measure Cholesterol, these three variables are labelled 'Cholesterol_min', 'Cholesterol_max', and 'Cholesterol_diff'.
+### 
 
-* [Albumin](http://en.wikipedia.org/wiki/Human_serum_albumin)
- (g/dL)
-* [ALP](http://en.wikipedia.org/wiki/Alkaline_phosphatase)
- [Alkaline phosphatase (IU/L)]
-* [ALT](http://en.wikipedia.org/wiki/Alanine_transaminase)
- [Alanine transaminase (IU/L)]
-* [AST](http://en.wikipedia.org/wiki/Aspartate_transaminase)
- [Aspartate transaminase (IU/L)]
-* [Bilirubin](http://en.wikipedia.org/wiki/Bilirubin)
- (mg/dL)
-* [BUN](http://en.wikipedia.org/wiki/BUN)
- [Blood urea nitrogen (mg/dL)]
-* [Cholesterol](http://en.wikipedia.org/wiki/Cholesterol)
- (mg/dL)
-* [Creatinine](http://en.wikipedia.org/wiki/Serum_creatinine#Plasma_creatinine)
- [Serum creatinine (mg/dL)]
-* [DiasABP](http://en.wikipedia.org/wiki/Diastolic_blood_pressure)
- [Invasive diastolic arterial blood pressure (mmHg)]
-* [FiO2](http://en.wikipedia.org/wiki/FIO2)
- [Fractional inspired O<sub>2</sub> (0-1)]
-* [GCS](http://en.wikipedia.org/wiki/Glasgow_coma_score)
- [Glasgow Coma Score (3-15)]
-* [Glucose](http://en.wikipedia.org/wiki/Serum_glucose)
- [Serum glucose (mg/dL)]
-* [HCO3](http://en.wikipedia.org/wiki/Bicarbonate#Diagnostics)
- [Serum bicarbonate (mmol/L)]
-* [HCT](http://en.wikipedia.org/wiki/Hematocrit)
- [Hematocrit (%)]
-* [HR](http://en.wikipedia.org/wiki/Heart_rate)
- [Heart rate (bpm)]
-* [K](http://en.wikipedia.org/wiki/Hypokalemia)
- [Serum potassium (mEq/L)]
-* [Lactate](http://en.wikipedia.org/wiki/Lactic_acid)
- (mmol/L)
-* [Mg](http://en.wikipedia.org/wiki/Magnesium#Biological_role)
- [Serum magnesium (mmol/L)]
-* [MAP](http://en.wikipedia.org/wiki/Mean_arterial_pressure)
- [Invasive mean arterial blood pressure (mmHg)]
-* [MechVent](http://en.wikipedia.org/wiki/Mechanical_ventilation)
- [Mechanical ventilation respiration (0:false, or 1:true)]
-* [Na](http://en.wikipedia.org/wiki/Serum_sodium)
- [Serum sodium (mEq/L)]
-* [NIDiasABP](http://en.wikipedia.org/wiki/Diastolic_blood_pressure)
- [Non-invasive diastolic arterial blood pressure (mmHg)]
-* [NIMAP](http://en.wikipedia.org/wiki/Mean_arterial_pressure)
- [Non-invasive mean arterial blood pressure (mmHg)]
-* [NISysABP](http://en.wikipedia.org/wiki/Systolic_blood_pressure)
- [Non-invasive systolic arterial blood pressure (mmHg)]
-* [PaCO2](http://en.wikipedia.org/wiki/Arterial_blood_gas)
- [partial pressure of arterial CO<sub>2</sub> (mmHg)]
-* [PaO2](http://en.wikipedia.org/wiki/Arterial_blood_gas)
- [Partial pressure of arterial O<sub>2</sub> (mmHg)]
-* [pH](http://en.wikipedia.org/wiki/Arterial_blood_gas)
- [Arterial pH (0-14)]
-* [Platelets](http://en.wikipedia.org/wiki/Platelets)
- (cells/nL)
-* [RespRate](http://en.wikipedia.org/wiki/Respiratory_physiology)
- [Respiration rate (bpm)]
-* [SaO2](http://en.wikipedia.org/wiki/Arterial_blood_gas)
- [O<sub>2</sub> saturation in hemoglobin (%)]
-* [SysABP](http://en.wikipedia.org/wiki/Systolic_blood_pressure)
- [Invasive systolic arterial blood pressure (mmHg)]
-* [Temp](http://en.wikipedia.org/wiki/Normal_human_body_temperature)
- [Temperature (&deg;C)]
-* [TropI](http://en.wikipedia.org/wiki/Troponin)
- [Troponin-I (&mu;g/L)]
-* [TropT](http://en.wikipedia.org/wiki/Troponin)
- [Troponin-T (&mu;g/L)]
-* [Urine](http://en.wikipedia.org/wiki/Fluid_balance)
- [Urine output (mL)]
-* [WBC](http://en.wikipedia.org/wiki/Reference_ranges_for_blood_tests#Hematology)
- [White blood cell count (cells/nL)]
-* Weight (kg)
+The following 36 clinical measures were assessed at multiple timepoints
+during each patient's ICU stay. For each of the 36 clinical measures,
+you are given 3 summary variables: a) The minimum value during the first
+24 hours in ICU (\_min), b) The maximum value during the first 24 hours
+in ICU (\_max), and c) The difference between the mean and the most
+extreme values during the first 24 hours in ICU (\_diff). For example,
+for the clinical measure Cholesterol, these three variables are labelled
+'Cholesterol_min', 'Cholesterol_max', and 'Cholesterol_diff'.
 
+-   [Albumin](http://en.wikipedia.org/wiki/Human_serum_albumin) (g/dL)
+-   [ALP](http://en.wikipedia.org/wiki/Alkaline_phosphatase) [Alkaline
+    phosphatase (IU/L)]
+-   [ALT](http://en.wikipedia.org/wiki/Alanine_transaminase) [Alanine
+    transaminase (IU/L)]
+-   [AST](http://en.wikipedia.org/wiki/Aspartate_transaminase)
+    [Aspartate transaminase (IU/L)]
+-   [Bilirubin](http://en.wikipedia.org/wiki/Bilirubin) (mg/dL)
+-   [BUN](http://en.wikipedia.org/wiki/BUN) [Blood urea nitrogen
+    (mg/dL)]
+-   [Cholesterol](http://en.wikipedia.org/wiki/Cholesterol) (mg/dL)
+-   [Creatinine](http://en.wikipedia.org/wiki/Serum_creatinine#Plasma_creatinine)
+    [Serum creatinine (mg/dL)]
+-   [DiasABP](http://en.wikipedia.org/wiki/Diastolic_blood_pressure)
+    [Invasive diastolic arterial blood pressure (mmHg)]
+-   [FiO2](http://en.wikipedia.org/wiki/FIO2) [Fractional inspired
+    O<sub>2</sub> (0-1)]
+-   [GCS](http://en.wikipedia.org/wiki/Glasgow_coma_score) [Glasgow Coma
+    Score (3-15)]
+-   [Glucose](http://en.wikipedia.org/wiki/Serum_glucose) [Serum glucose
+    (mg/dL)]
+-   [HCO3](http://en.wikipedia.org/wiki/Bicarbonate#Diagnostics) [Serum
+    bicarbonate (mmol/L)]
+-   [HCT](http://en.wikipedia.org/wiki/Hematocrit) [Hematocrit (%)]
+-   [HR](http://en.wikipedia.org/wiki/Heart_rate) [Heart rate (bpm)]
+-   [K](http://en.wikipedia.org/wiki/Hypokalemia) [Serum potassium
+    (mEq/L)]
+-   [Lactate](http://en.wikipedia.org/wiki/Lactic_acid) (mmol/L)
+-   [Mg](http://en.wikipedia.org/wiki/Magnesium#Biological_role) [Serum
+    magnesium (mmol/L)]
+-   [MAP](http://en.wikipedia.org/wiki/Mean_arterial_pressure) [Invasive
+    mean arterial blood pressure (mmHg)]
+-   [MechVent](http://en.wikipedia.org/wiki/Mechanical_ventilation)
+    [Mechanical ventilation respiration (0:false, or 1:true)]
+-   [Na](http://en.wikipedia.org/wiki/Serum_sodium) [Serum sodium
+    (mEq/L)]
+-   [NIDiasABP](http://en.wikipedia.org/wiki/Diastolic_blood_pressure)
+    [Non-invasive diastolic arterial blood pressure (mmHg)]
+-   [NIMAP](http://en.wikipedia.org/wiki/Mean_arterial_pressure)
+    [Non-invasive mean arterial blood pressure (mmHg)]
+-   [NISysABP](http://en.wikipedia.org/wiki/Systolic_blood_pressure)
+    [Non-invasive systolic arterial blood pressure (mmHg)]
+-   [PaCO2](http://en.wikipedia.org/wiki/Arterial_blood_gas) [partial
+    pressure of arterial CO<sub>2</sub> (mmHg)]
+-   [PaO2](http://en.wikipedia.org/wiki/Arterial_blood_gas) [Partial
+    pressure of arterial O<sub>2</sub> (mmHg)]
+-   [pH](http://en.wikipedia.org/wiki/Arterial_blood_gas) [Arterial pH
+    (0-14)]
+-   [Platelets](http://en.wikipedia.org/wiki/Platelets) (cells/nL)
+-   [RespRate](http://en.wikipedia.org/wiki/Respiratory_physiology)
+    [Respiration rate (bpm)]
+-   [SaO2](http://en.wikipedia.org/wiki/Arterial_blood_gas)
+    [O<sub>2</sub> saturation in hemoglobin (%)]
+-   [SysABP](http://en.wikipedia.org/wiki/Systolic_blood_pressure)
+    [Invasive systolic arterial blood pressure (mmHg)]
+-   [Temp](http://en.wikipedia.org/wiki/Normal_human_body_temperature)
+    [Temperature (°C)]
+-   [TropI](http://en.wikipedia.org/wiki/Troponin) [Troponin-I (μg/L)]
+-   [TropT](http://en.wikipedia.org/wiki/Troponin) [Troponin-T (μg/L)]
+-   [Urine](http://en.wikipedia.org/wiki/Fluid_balance) [Urine output
+    (mL)]
+-   [WBC](http://en.wikipedia.org/wiki/Reference_ranges_for_blood_tests#Hematology)
+    [White blood cell count (cells/nL)]
+-   Weight (kg)
 
 ## Accessing the Data
+
 The data frame can be loaded with the following code:
 
-```
-icu_patients_df0 <- readRDS("icu_patients_df0.rds")
-icu_patients_df1 <- readRDS("icu_patients_df1.rds")
-```
-**Note:** icu_patients_df1 is an imputed (i.e. missing values are 'derived') version of icu_patients_df0.  This assessment does not concern the methods used for imputation.
+    icu_patients_df0 <- readRDS("icu_patients_df0.rds")
+    icu_patients_df1 <- readRDS("icu_patients_df1.rds")
 
+**Note:** icu_patients_df1 is an imputed (i.e. missing values are
+'derived') version of icu_patients_df0. This assessment does not concern
+the methods used for imputation.
 
 # Task 1
 
-In this task, you are required to develop a logistic regression model using the `icu_patients_df1` data set which adequately explains or predicts the `in_hospital_death` variable as the outcome using a subset of the available predictor variables. You should fit a series of models, evaluating each one, before you present your final model. Your final model should **not** include all the predictor variables, just a small subset of them, which you have selected based on statistical significance and/or background knowledge. It is perfectly acceptable to include predictor variables in your final model which are not statistically significant, as long as you justify their inclusion on medical or physiological grounds (you will not be marked down if your medical justification is not exactly correct or complete, but do you best). Aim for between five and ten predictor variables (slightly more or fewer is OK). You should assess each model you consider for goodness of fit and other relevant statistics to help you choose between them. For your final model, present a set of diagnostic statistics and/or charts and comment on them. You don't need to do an exhaustive exploratory data analysis of all the variables in the data set, but you should examine those variables that you use in your model. Finally, re-fit your final model to the unimputed data frame (`icu_patients_df0.rds`) and comment on any differences you find compared to the same model fitted to the imputed data. 
-
+In this task, you are required to develop a logistic regression model
+using the `icu_patients_df1` data set which adequately explains or
+predicts the `in_hospital_death` variable as the outcome using a subset
+of the available predictor variables. You should fit a series of models,
+evaluating each one, before you present your final model. Your final
+model should **not** include all the predictor variables, just a small
+subset of them, which you have selected based on statistical
+significance and/or background knowledge. It is perfectly acceptable to
+include predictor variables in your final model which are not
+statistically significant, as long as you justify their inclusion on
+medical or physiological grounds (you will not be marked down if your
+medical justification is not exactly correct or complete, but do you
+best). Aim for between five and ten predictor variables (slightly more
+or fewer is OK). You should assess each model you consider for goodness
+of fit and other relevant statistics to help you choose between them.
+For your final model, present a set of diagnostic statistics and/or
+charts and comment on them. You don't need to do an exhaustive
+exploratory data analysis of all the variables in the data set, but you
+should examine those variables that you use in your model. Finally,
+re-fit your final model to the unimputed data frame
+(`icu_patients_df0.rds`) and comment on any differences you find
+compared to the same model fitted to the imputed data.
 
 ### Hints
 
-1. Select an initial subset of explanatory variables that you will use to predict the risk of in-hospital death. Justify your choice.
+1.  Select an initial subset of explanatory variables that you will use
+    to predict the risk of in-hospital death. Justify your choice.
 
-2. Conduct basic exploratory data analysis on your variables of choice.
+2.  Conduct basic exploratory data analysis on your variables of choice.
 
-3. Fit appropriate univariate logistic regression models.
+3.  Fit appropriate univariate logistic regression models.
 
-4. Fit an appropriate series of multivariable logistic regression models, justifying your approach. Assess each model you consider for goodness of fit and other relevant statistics.
+4.  Fit an appropriate series of multivariable logistic regression
+    models, justifying your approach. Assess each model you consider for
+    goodness of fit and other relevant statistics.
 
-5. Present your final model. Your final model should **not** include all the predictor variables, just a small subset of them, which you have selected based on statistical significance and/or background knowledge.
+5.  Present your final model. Your final model should **not** include
+    all the predictor variables, just a small subset of them, which you
+    have selected based on statistical significance and/or background
+    knowledge.
 
-6. For your final model, present a set of diagnostic statistics and/or charts and comment on them.
+6.  For your final model, present a set of diagnostic statistics and/or
+    charts and comment on them.
 
-7. Write a paragraph or two summarizing the most important findings of your final model. Include the most important values from the statistical output, and a simple clinical interpretation.
-
+7.  Write a paragraph or two summarizing the most important findings of
+    your final model. Include the most important values from the
+    statistical output, and a simple clinical interpretation.
 
 ### Task 1
-
 
 ```{r Task1-EDAi}
 # Getting the summary statistics of the dataset
 summary(icu_patients_df1)
 
 ```
-_We had a look at all the variables in the dataset before making a selection of 9 variables which we will investigate._  
 
-_We selected the predictor variables (age, length of stay, ICU type, SOFA score, maximum fractional inspired oxygen (FiO2), minimum Glasgow Coma Score (GCS), maximum heart rate and minimum respiration rate) to predict the risk of in-hospital death._  
+*We had a look at all the variables in the dataset before making a
+selection of 9 variables which we will investigate.*
 
-_An interesting finding with the summary statistics is that there might be issues with the data quality. As seen in the summary statistics of length of stay and SOFA scores, the minimum value is negative which is not possible as length of stay cannot be negative and SOFA scores range from 0-24._   
+*We selected the predictor variables (age, length of stay, ICU type,
+SOFA score, maximum fractional inspired oxygen (FiO2), minimum Glasgow
+Coma Score (GCS), maximum heart rate and minimum respiration rate) to
+predict the risk of in-hospital death.*
+
+*An interesting finding with the summary statistics is that there might
+be issues with the data quality. As seen in the summary statistics of
+length of stay and SOFA scores, the minimum value is negative which is
+not possible as length of stay cannot be negative and SOFA scores range
+from 0-24.*
 
 **Background Research supporting the selection of predictor variables**
 
-_Based on the article "Relationship between age and in-hospital mortality during 15,345,025 non-surgical hospitalizations" from the Archives of Medical Science, the findings support in hospital death to be associated with the age of the patients. In this study, older patients have a greater odds of dying in hospital than younger patients._    
+*Based on the article "Relationship between age and in-hospital
+mortality during 15,345,025 non-surgical hospitalizations" from the
+Archives of Medical Science, the findings support in hospital death to
+be associated with the age of the patients. In this study, older
+patients have a greater odds of dying in hospital than younger
+patients.*
 
-_Another article, "Patient length of stay and mortality prediction: A survey" from PubMed suggests that the longer length of stay in hospital is a parameter linked to the severity of the health conditions, therefore may be associated with in hospital mortality._     
+*Another article, "Patient length of stay and mortality prediction: A
+survey" from PubMed suggests that the longer length of stay in hospital
+is a parameter linked to the severity of the health conditions,
+therefore may be associated with in hospital mortality.*
 
-_In this article, "Infection as an independent risk factor for mortality in the surgical intensive care unit" from National Library of Medicine which evaluated mortality in hospital from surgical and medical ICU, points out that certain types of ICU are associated with high in hospital mortality._     
+*In this article, "Infection as an independent risk factor for mortality
+in the surgical intensive care unit" from National Library of Medicine
+which evaluated mortality in hospital from surgical and medical ICU,
+points out that certain types of ICU are associated with high in
+hospital mortality.*
 
-_Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria, and qSOFA Score for In-Hospital Mortality Among Adults With Suspected Infection Admitted to the Intensive Care Unit" from PubMed propose that high SOFA scores are associated with higher in hospital mortality._    
+*Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria,
+and qSOFA Score for In-Hospital Mortality Among Adults With Suspected
+Infection Admitted to the Intensive Care Unit" from PubMed propose that
+high SOFA scores are associated with higher in hospital mortality.*
 
-_According to "Severity of respiratory failure at admission and in-hospital mortality in patients with COVID-19: a prospective observational multicentre study" from BMJ reports high FiO2 is independently associated with in-hospital mortality._   
+*According to "Severity of respiratory failure at admission and
+in-hospital mortality in patients with COVID-19: a prospective
+observational multicentre study" from BMJ reports high FiO2 is
+independently associated with in-hospital mortality.*
 
-_In addition, "In-hospital mortality and the Glasgow Coma Scale in the first 72 hours after traumatic brain injury" from SciELO suggests that low GCS scores are associated with in-hospital mortality._  
+*In addition, "In-hospital mortality and the Glasgow Coma Scale in the
+first 72 hours after traumatic brain injury" from SciELO suggests that
+low GCS scores are associated with in-hospital mortality.*
 
-_Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in patients with acute coronary syndromes" from PubMed propose that high heart rate can be associated with in-hospital mortality in certain sub-population of patients._   
+*Furthermore, "Heart rate at admission is a predictor of in-hospital
+mortality in patients with acute coronary syndromes" from PubMed propose
+that high heart rate can be associated with in-hospital mortality in
+certain sub-population of patients.*
 
-_Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between low respiratory rate and in hospital and short term mortality._   
-
+*Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and
+all-cause mortality in community-dwelling older men and women" from ERS
+reports that the association between low respiratory rate and in
+hospital and short term mortality.*
 
 ```{r Task1-EDAii}
 # Subsetting the ICU dataset into variables of interest
@@ -218,9 +323,11 @@ icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, L
 str(icu_sub)
 
 ```
-_The subset ICU dataset contains 2061 observations of 9 variables. The outcome variable is death in hospital and the predictor variables are type of ICU, age, length of stay, SOFA scores, maximum FiO2, minimum respiration rate, maximum heart rate and minimum GCS._  
 
-
+*The subset ICU dataset contains 2061 observations of 9 variables. The
+outcome variable is death in hospital and the predictor variables are
+type of ICU, age, length of stay, SOFA scores, maximum FiO2, minimum
+respiration rate, maximum heart rate and minimum GCS.*
 
 ```{r, Task1-EDAiii}
 # Check the summary of the dataset
@@ -237,7 +344,8 @@ names(which(colSums(! is.na(icu_sub)) < 2061))
 icu_sub$in_hospital_death <- as.factor(icu_sub$in_hospital_death)
 
 ```
-The subset of ICU dataset has no missing data. 
+
+The subset of ICU dataset has no missing data.
 
 ```{r, Task1-EDAiv}
 # for loop to produce all the plots to compare the distribution
@@ -247,7 +355,16 @@ plots <- for (column in names) {
   }
 
 ```
-_Looking at the histograms, it is evident that majority of the patients did not die in the hospital and the distribution for all predictor variables except type of ICU for survivor and died in hospital are very similar. An interesting observation is that for the variable minimum respiration rate, the mean respiration rate is higher in those that died in hospital than those who survived. Another observation which aligns with the research is the predictor variable age, the mean age of patients is higher in the cohort that died in the hospital than those who survived._  
+
+*Looking at the histograms, it is evident that majority of the patients
+did not die in the hospital and the distribution for all predictor
+variables except type of ICU for survivor and died in hospital are very
+similar. An interesting observation is that for the variable minimum
+respiration rate, the mean respiration rate is higher in those that died
+in hospital than those who survived. Another observation which aligns
+with the research is the predictor variable age, the mean age of
+patients is higher in the cohort that died in the hospital than those
+who survived.*
 
 ```{r, Task1-age}
 # Fitting univariate logistic regression models
@@ -290,6 +407,7 @@ summary(HR_glm)
 GCS_glm <- glm(in_hospital_death ~  GCS_min, family = binomial, data = icu_sub)
 summary(GCS_glm)
 ```
+
 ```{r, Task1-Comparing GLM Models}
 # Null model 
 null <- glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
@@ -302,7 +420,11 @@ for (model in glm_mod) {
   print(anova(null, model, test = "Chi"))
 }
 ```
-_From the analysis of deviance, it seems that the age, type of ICU, SOFA scores, minimum respiration rate, maximum heart rate and low GCS are significant predictors compared to the null model as their p-values are below 0.05._  
+
+*From the analysis of deviance, it seems that the age, type of ICU, SOFA
+scores, minimum respiration rate, maximum heart rate and low GCS are
+significant predictors compared to the null model as their p-values are
+below 0.05.*
 
 ```{r, Task1-AIC}
 # Using AIC for model selection
@@ -311,8 +433,11 @@ aic_suggest_mod <- step(full_mod, trace = 1)
 summary(aic_suggest_mod)
 ```
 
-_The AIC suggested models only contain four predictor variables which are type of ICU, age, SOFA score and minimum respiration rate. Although this is the best model according to AIC indication, we still wanted to include maximum heart rate and minimum GCS and complete 3 more tests of analysis of deviance to compare the models._
-
+*The AIC suggested models only contain four predictor variables which
+are type of ICU, age, SOFA score and minimum respiration rate. Although
+this is the best model according to AIC indication, we still wanted to
+include maximum heart rate and minimum GCS and complete 3 more tests of
+analysis of deviance to compare the models.*
 
 ```{r, Task1-test model1}
 # analysis of deviance
@@ -320,26 +445,35 @@ test_mod_glm1 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + H
     family = binomial, data = icu_sub)
 print(anova(aic_suggest_mod, test_mod_glm1, test = "Chi"))
 ```
+
 ```{r, Task1-test model2}
 # analysis of deviance
 test_mod_glm2 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + GCS_min,
     family = binomial, data = icu_sub)
 print(anova(aic_suggest_mod, test_mod_glm2, test = "Chi"))
 ```
+
 ```{r, Task1-test model3}
 # analysis of deviance
 test_mod_glm3 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + HR_max,
     family = binomial, data = icu_sub)
 print(anova(aic_suggest_mod, test_mod_glm3, test = "Chi"))
 ```
-_The 3 analysis of deviance test suggest there are only 4 significant predictors of deaths in hospital as suggested by AIC and these are ICU type, age, SOFA scores and minimum respiration rate._   
+
+*The 3 analysis of deviance test suggest there are only 4 significant
+predictors of deaths in hospital as suggested by AIC and these are ICU
+type, age, SOFA scores and minimum respiration rate.*
 
 ```{r, Task1- interactions}
 # Checking if the reduced model is better fitted with interactions according to the AIC
 (reduced_interactions <-stepAIC(aic_suggest_mod, direction="both", scope=list(lower=~1, upper=~.^2), trace=F, data=icu_sub))
 summary(reduced_interactions)
 ```
-_After checking the summary statistics for the logistic regression model including the 2 interactions, the age:SOFA interaction have a p-value above 0.05, which means that it is not statistically significant. Therefore, it is reasonable to drop this interaction._
+
+*After checking the summary statistics for the logistic regression model
+including the 2 interactions, the age:SOFA interaction have a p-value
+above 0.05, which means that it is not statistically significant.
+Therefore, it is reasonable to drop this interaction.*
 
 ```{r, Task1- interactions comparison}
 # Refitting the model with one interaction term 
@@ -350,14 +484,18 @@ summary(reduced_interactions2)
 # Conducting an analysis of deviance
 print(anova(aic_suggest_mod, reduced_interactions2, test = "Chi"))
 ```
-_It seems that the model including the interaction term is preferred over the model without the interaction as shown by the p-value of 0.02156._
 
+*It seems that the model including the interaction term is preferred
+over the model without the interaction as shown by the p-value of
+0.02156.*
 
 ```{r, Task1-binned residual}
 # Checking the model fit using binned residual plot
 binnedplot(predict(reduced_interactions2), residuals(aic_suggest_mod))
 ```
-_The variance of the residuals in the binned residual plot seems to be constant and evenly distributed._  
+
+*The variance of the residuals in the binned residual plot seems to be
+constant and evenly distributed.*
 
 ```{r, Task1-Pseudo-R2-reduced model}
 options(scipen=999)
@@ -372,7 +510,9 @@ PseudoR2(reduced_interactions2, which = "all")
 
 ```
 
-_The Pseudo-R2 is slightly better in the model with the interaction compared to the one without as the Pseudo R2 values are slightly larger meaning that the model with interaction has a slight better fit._  
+*The Pseudo-R2 is slightly better in the model with the interaction
+compared to the one without as the Pseudo R2 values are slightly larger
+meaning that the model with interaction has a slight better fit.*
 
 ```{r, Task1-Brier score}
 # Changing the variable into numeric so doesn't run into error when knitting
@@ -388,13 +528,17 @@ pred_prob_reduced_interactions2 <- predict(reduced_interactions2, type = "respon
 brier_score_reduced <- mean((pred_prob_reduced_interactions2 - icu_sub$in_hospital_death)^2)
 brier_score_reduced
 ```
-_The difference in Brier scores between the two is very small, therefore the reduced model with interaction is preferred based on the analysis of deviance conducted earlier._
+
+*The difference in Brier scores between the two is very small, therefore
+the reduced model with interaction is preferred based on the analysis of
+deviance conducted earlier.*
 
 ```{r, refit model to unimputed data}
 unimputed <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + 
     ICUType:SOFA, family = binomial, data = icu_patients_df0)
 summary(unimputed)
 ```
+
 ```{r, Task1-p-value reduced unimputed}
 # calculate p-value 
 (p_unimputed <- 1 - pchisq(unimputed$null.deviance - unimputed$deviance, unimputed$df.null - unimputed$df.residual))
@@ -409,54 +553,257 @@ reduced_null <-glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
 # calculate p-value 
 print(anova(reduced_null, reduced_interactions2, test = "Chi"))
 ```
-_Looking through the summary statistics and p-values of the imputed and the unimputed datasets, the beta estimates of the predictor variables altered slightly, and the ICU (Cardiac Surgery Recovery Unit) and SOFA score interaction became insignificant in the unimputed dataset. The AIC for the unimputed dataset is 286.33 which is much better than the AIC for the imputed dataset of 1475.3. This means that the model is a better fit for the unimputed dataset._  
 
-**Summary Findings**  
+*Looking through the summary statistics and p-values of the imputed and
+the unimputed datasets, the beta estimates of the predictor variables
+altered slightly, and the ICU (Cardiac Surgery Recovery Unit) and SOFA
+score interaction became insignificant in the unimputed dataset. The AIC
+for the unimputed dataset is 286.33 which is much better than the AIC
+for the imputed dataset of 1475.3. This means that the model is a better
+fit for the unimputed dataset.*
 
-_After comparing different models, the final model we have fitted contains the predictor variables (type of ICU, age, SOFA scores and minimum respiration rate) and an interaction between type of ICU and SOFA scores. The p-value is 0 if rounded to 3 decimal places which suggests that the model is better than the null model._   
-_Through the analysis of deviance, it is apparent that the model with an interaction is the preferred model over the one without as shown by the p-value of 0.02156. This is also confirmed by the Pseudo R2 values. Although the Brier Scores show the model without the interaction has a slightly better fit, but the differences is negligible if rounded to 3 decimal places where both values would be 1.107. The binned residual plot also did not raise any concerns as the variance of the residuals in the binned residual plot seems to be constant and evenly distributed. In conclusion, the findings of this study suggests that the in-hospital mortality rate is associated with type of ICU, age of the patient, SOFA scores and minimum respiration rate out of the initial subset of the predictor variables that were selected._  
+**Summary Findings**
+
+*After comparing different models, the final model we have fitted
+contains the predictor variables (type of ICU, age, SOFA scores and
+minimum respiration rate) and an interaction between type of ICU and
+SOFA scores. The p-value is 0 if rounded to 3 decimal places which
+suggests that the model is better than the null model.*\
+*Through the analysis of deviance, it is apparent that the model with an
+interaction is the preferred model over the one without as shown by the
+p-value of 0.02156. This is also confirmed by the Pseudo R2 values.
+Although the Brier Scores show the model without the interaction has a
+slightly better fit, but the differences is negligible if rounded to 3
+decimal places where both values would be 1.107. The binned residual
+plot also did not raise any concerns as the variance of the residuals in
+the binned residual plot seems to be constant and evenly distributed. In
+conclusion, the findings of this study suggests that the in-hospital
+mortality rate is associated with type of ICU, age of the patient, SOFA
+scores and minimum respiration rate out of the initial subset of the
+predictor variables that were selected.*
 
 # Task 2
 
-In this task, you are required to develop a Cox proportional hazards survival model using the `icu_patients_df1` data set which adequately explains or predicts the length of survival indicated by the `Days` variable, with censoring as indicated by the `Status` variable.  You should fit a series of models, maybe three or four, evaluating each one, before you present your final model. Your final model should **not** include all the predictor variables, just a small subset of them, which you have selected based on statistical significance and/or background knowledge. Aim for between five and ten predictor variables (slightly more or fewer is OK). It is perfectly acceptable to include predictor variables in your final model which are not statistically significant, as long as you justify their inclusion on medical or physiological grounds (you will not be marked down if your medical justification is not exactly correct, but do you best). You should assess each model you consider for goodness of fit and other relevant statistics, and you should assess your final model for violations of assumptions and perform other diagnostics which you think are relevant (and modify the model if indicated, or at least comment on the possible impact of what your diagnostics show). Finally, re-fit your final model to the unimputed data frame (`icu_patients_df0.rds`) and comment on any differences you find.
+In this task, you are required to develop a Cox proportional hazards
+survival model using the `icu_patients_df1` data set which adequately
+explains or predicts the length of survival indicated by the `Days`
+variable, with censoring as indicated by the `Status` variable. You
+should fit a series of models, maybe three or four, evaluating each one,
+before you present your final model. Your final model should **not**
+include all the predictor variables, just a small subset of them, which
+you have selected based on statistical significance and/or background
+knowledge. Aim for between five and ten predictor variables (slightly
+more or fewer is OK). It is perfectly acceptable to include predictor
+variables in your final model which are not statistically significant,
+as long as you justify their inclusion on medical or physiological
+grounds (you will not be marked down if your medical justification is
+not exactly correct, but do you best). You should assess each model you
+consider for goodness of fit and other relevant statistics, and you
+should assess your final model for violations of assumptions and perform
+other diagnostics which you think are relevant (and modify the model if
+indicated, or at least comment on the possible impact of what your
+diagnostics show). Finally, re-fit your final model to the unimputed
+data frame (`icu_patients_df0.rds`) and comment on any differences you
+find.
 
+```{r}
+str(icu_patients_df1)
+```
+
+The explanatory variables I will use to predict survival will include:
+
+-   the `Age` demographic
+
+-   important vital signs: `HR_min`, `RespRate_min`, `SaO2_max`,
+    `SysABP_max`, `Temp_max`, `GCS_max`, `Urine_max`
+
+-   important biochemical markers chosen based on clinical experience:
+    `Lactate_max`, `HCT_max`, `Creatinine_max`, `Creatinine_max`
+
+I will create a subset of the `icu_patients_df1` with the above
+predictor variables, and the outcome variables `Days` (survival) and
+`Status` (censoring).
+
+```{r, Task2-subset}
+icu_sub2 <- icu_patients_df1 %>% dplyr::select(Days, Status, Age, HR_min, RespRate_min, SaO2_max, SysABP_max, Temp_max, GCS_max, Urine_max, Lactate_max, HCT_min, Creatinine_max, Na_max)
+```
+
+A brief exploratory data analysis is performed on the variables of
+interest.
+
+```{r, Task2-EDA}
+predictors <- colnames(icu_sub2[-c(1,2)])
+for (predictor in predictors) {
+  p <- ggplot(icu_sub2, aes(x = icu_sub2[,predictor], fill=Status)) + 
+  geom_density(alpha = 0.3) + 
+  theme_minimal() + 
+  scale_x_continuous(expand = c(0,0)) + 
+  scale_y_continuous(expand = c(0,0)) + 
+  ggtitle(paste("Density Plot of", predictor)) + 
+  labs(x = predictor)
+  plot(p)
+}
+summary(icu_sub2)
+attach(icu_sub2)
+```
+
+We will now fit some univariate models for these predictors.
+
+```{r survival-univariate}
+library(survival)
+surv_object <- Surv(Days, Status)
+coxmod_null <- coxph(surv_object ~ 1, data=icu_sub2)
+coxmod_age <- coxph(surv_object ~ Age, data=icu_sub2)
+coxmod_HR <- coxph(surv_object ~ HR_min, data=icu_sub2)
+coxmod_RR <- coxph(surv_object ~ RespRate_min, data=icu_sub2)
+coxmod_O2 <- coxph(surv_object ~ SaO2_max, data=icu_sub2)
+coxmod_SBP <- coxph(surv_object ~ SysABP_max, data=icu_sub2)
+coxmod_temp <- coxph(surv_object ~ Temp_max, data=icu_sub2)
+coxmod_GCS <- coxph(surv_object ~ GCS_max, data=icu_sub2)
+coxmod_UO <- coxph(surv_object ~ Urine_max, data=icu_sub2)
+coxmod_lactate <- coxph(surv_object ~ Lactate_max, data=icu_sub2)
+coxmod_HCT <- coxph(surv_object ~ HCT_min, data=icu_sub2)
+coxmod_Cr <- coxph(surv_object ~ Creatinine_max, data=icu_sub2)
+coxmod_Na <- coxph(surv_object ~ Na_max, data=icu_sub2)
+```
+
+```{r coxmod_null}
+summary(coxmod_null)
+```
+
+```{r coxmod_age}
+summary(coxmod_age)
+```
+
+```{r coxmod_HR}
+summary(coxmod_HR)
+```
+
+```{r coxmod_RR}
+summary(coxmod_RR)
+
+```
+
+```{r coxmod_O2}
+summary(coxmod_O2)
+```
+
+```{r coxmod_SBP}
+summary(coxmod_SBP)
+```
+
+```{r coxmod_temp}
+summary(coxmod_temp)
+```
+
+```{r coxmod_GCS}
+summary(coxmod_GCS)
+```
+
+```{r coxmod_UO}
+summary(coxmod_UO)
+```
+
+```{r coxmod_lactate}
+summary(coxmod_lactate)
+```
+
+```{r coxmod_HCT}
+summary(coxmod_HCT)
+```
+
+```{r coxmod_Cr}
+summary(coxmod_Cr)
+```
+
+```{r coxmod_Na}
+summary(coxmod_Na)
+```
+
+From the univariate models, it appears `Age`, `RespRate_min`,
+`SysABP_max`, `Temp_max`, `GCS_max`, `Urine_max`, `Lactate_max`,
+`Creatinine_max` are statistically significant predictors for survival.
+
+We now fit some multivariate models.
+
+1.  Full subset of predictors
+2.  Only those significant in the univariate models
+
+```{r coxmod_mv1}
+coxmod_mv_all <- coxph(surv_object ~ Age + HR_min + RespRate_min + SaO2_max + SysABP_max + Temp_max + GCS_max + Urine_max + Lactate_max + HCT_min + Creatinine_max + Na_max, data=icu_sub2)
+coxmod_mv_uni <- coxph(surv_object ~ Age + RespRate_min + SysABP_max + Temp_max + GCS_max + Urine_max + Lactate_max + Creatinine_max, data=icu_sub2)
+```
+
+```{r coxmod_mv_all}
+summary(coxmod_mv_all)
+```
+
+```{r coxmod_mv_uni}
+summary(coxmod_mv_uni)
+```
 
 ### Hints
 
-1. Select an initial subset of explanatory variables that you will use to predict survival. Justify your choice.
+1.  Select an initial subset of explanatory variables that you will use
+    to predict survival. Justify your choice.
 
-2. Conduct basic exploratory data analysis on your variables of choice.
+2.  Conduct basic exploratory data analysis on your variables of choice.
 
-3. Fit appropriate univariate Cox proportional hazards models.
+3.  Fit appropriate univariate Cox proportional hazards models.
 
-4. Fit an appropriate series of multivariable Cox proportional hazards models, justifying your approach. Assess each model you consider for goodness of fit and other relevant statistics. 
+4.  Fit an appropriate series of multivariable Cox proportional hazards
+    models, justifying your approach. Assess each model you consider for
+    goodness of fit and other relevant statistics.
 
-5. Present your final model. Your final model should **not** include all the predictor variables, just a small subset of them, which you have selected based on statistical significance and/or background knowledge.
+5.  Present your final model. Your final model should **not** include
+    all the predictor variables, just a small subset of them, which you
+    have selected based on statistical significance and/or background
+    knowledge.
 
-6. For your final model, present a set of diagnostic statistics and/or charts and comment on them. 
+6.  For your final model, present a set of diagnostic statistics and/or
+    charts and comment on them.
 
-7. Write a paragraph or two summarising the most important findings of your final model. Include the most important values from the statistical output, and a simple clinical interpretation. 
+7.  Write a paragraph or two summarising the most important findings of
+    your final model. Include the most important values from the
+    statistical output, and a simple clinical interpretation.
 
-
-**Create your response to this task here, as a mixture of embedded (`knitr`) R code and any resulting outputs, and explanatory or commentary text.** 
-
-
+**Create your response to this task here, as a mixture of embedded
+(`knitr`) R code and any resulting outputs, and explanatory or
+commentary text.**
 
 ## Save, knit and submit
 
-**Reminder**: don't forget to save this file, to knit it to check that everything works, and then submit via the drop box in OpenLearning.
+**Reminder**: don't forget to save this file, to knit it to check that
+everything works, and then submit via the drop box in OpenLearning.
 
 ## Submit your assessment
 
-When you have finished, and are satisfied with your assessment solutions, and this file knits without errors and the output looks the way you want, then you should submit via the drop box in OpenLearning.
+When you have finished, and are satisfied with your assessment
+solutions, and this file knits without errors and the output looks the
+way you want, then you should submit via the drop box in OpenLearning.
 
 ### Problems?
 
-If you encounter problems with any part of the process described above, please contact the course convenor via OpenLearning as soon as possible so that the issues can be resolved in good time, and well before the assessment is due.
-
+If you encounter problems with any part of the process described above,
+please contact the course convenor via OpenLearning as soon as possible
+so that the issues can be resolved in good time, and well before the
+assessment is due.
 
 ### Additional Information
 
-The instructions are deliberately open-ended and less prescriptive than the individual assessments to allow you some latitude in what you do and how you go about the task. However, to complete the tasks and gain full marks, you only need to replicate or repeat the steps covered in the course - if you do most or all of the things described in the revalant chapters of the HDAT9600 course, full marks will be awarded. 
+The instructions are deliberately open-ended and less prescriptive than
+the individual assessments to allow you some latitude in what you do and
+how you go about the task. However, to complete the tasks and gain full
+marks, you only need to replicate or repeat the steps covered in the
+course - if you do most or all of the things described in the revalant
+chapters of the HDAT9600 course, full marks will be awarded.
 
-Note also that with respect to the model fitting, there are no **right** or **wrong** answers when it comes to variable selection and other aspects of model specification. Deep understanding of the underlying medical concepts which govern patient treatment and outcomes in ICUs is not required or assumed, although you should try to gain some understanding of each variable using the links provided. You will not be marked down if your medical justifications are not exactly correct or complete, but do you best, and don't hesitate to seek help from the course convenor.
+Note also that with respect to the model fitting, there are no **right**
+or **wrong** answers when it comes to variable selection and other
+aspects of model specification. Deep understanding of the underlying
+medical concepts which govern patient treatment and outcomes in ICUs is
+not required or assumed, although you should try to gain some
+understanding of each variable using the links provided. You will not be
+marked down if your medical justifications are not exactly correct or
+complete, but do you best, and don't hesitate to seek help from the
+course convenor.
