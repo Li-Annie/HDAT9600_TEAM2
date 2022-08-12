@@ -3,8 +3,8 @@ title: "HDAT9600 Final Team Assignment"
 author: "Team 2"
 date: "insert date of completion here"
 output:
-  word_document: default
   html_document: default
+  word_document: default
 subtitle: Please see course outline / 'Announcements' for submission deadline
 editor_options:
   markdown:
@@ -20,6 +20,7 @@ library(ggplot2)
 library(arm)
 library(faraway)
 library(DescTools)
+library(rmarkdown)
 icu_patients_df0 <- readRDS("icu_patients_df0.rds")
 icu_patients_df1 <- readRDS("icu_patients_df1.rds")
 ```
@@ -254,8 +255,14 @@ compared to the same model fitted to the imputed data.
 ### Task 1
 
 ```{r Task1-EDAi}
+# Getting all the variable names of the dataset
+list(names(icu_patients_df1))
+
+# Subsetting the ICU dataset into variables of interest
+icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, Length_of_stay, SOFA, FiO2_max, RespRate_min, HR_max, GCS_min) 
+
 # Getting the summary statistics of the dataset
-summary(icu_patients_df1)
+summary(icu_sub)
 
 ```
 
@@ -318,9 +325,6 @@ reports that the association between low respiratory rate and in
 hospital and short term mortality.*
 
 ```{r Task1-EDAii}
-# Subsetting the ICU dataset into variables of interest
-icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, Length_of_stay, SOFA, FiO2_max, RespRate_min, HR_max, GCS_min)
-
 # Examining the structure of the subset of dataset
 str(icu_sub)
 
@@ -353,7 +357,7 @@ The subset of ICU dataset has no missing data.
 # for loop to produce all the plots to compare the distribution
  names <- colnames(icu_sub[-c(1:2)])
 plots <- for (column in names) {
-  print(ggplot(data = icu_sub, aes(x = icu_sub[,column], fill = in_hospital_death))+ geom_histogram() + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column, fill = "Deaths in Hospital") + facet_grid(in_hospital_death~., scales = "fixed") + scale_fill_discrete(name = "Deaths in Hospital", labels = c("Survivor", "Died in Hospital")))
+  print(ggplot(data = icu_sub, aes(x = icu_sub[,column], fill = in_hospital_death))+ geom_histogram(bins = 30) + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column, fill = "Deaths in Hospital") + facet_grid(in_hospital_death~., scales = "fixed") + scale_fill_discrete(name = "Deaths in Hospital", labels = c("Survivor", "Died in Hospital")))
   }
 
 ```
@@ -431,7 +435,7 @@ below 0.05.*
 ```{r, Task1-AIC}
 # Using AIC for model selection
 full_mod <- glm(in_hospital_death~., family = binomial, data = icu_sub)
-aic_suggest_mod <- step(full_mod, trace = 1)
+aic_suggest_mod <- stepAIC(full_mod, trace = F)
 summary(aic_suggest_mod)
 ```
 
