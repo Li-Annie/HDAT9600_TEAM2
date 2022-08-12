@@ -1,18 +1,20 @@
 ---
 title: "HDAT9600 Final Team Assignment"
-subtitle: "Please see course outline / 'Announcements' for submission deadline"
 author: "Team 2"
 date: "insert date of completion here"
-output: html_document
-editor_options: 
-  markdown: 
+output:
+  word_document: default
+  html_document: default
+subtitle: Please see course outline / 'Announcements' for submission deadline
+editor_options:
+  markdown:
     wrap: 72
 ---
 
 ```{r setup, include=FALSE}
 # leave this code here, but feel free to adjust the options or add some more
 # see the knitr documentation for details
-  knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=12)
+  knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=6)
 library(dplyr)
 library(ggplot2)
 library(arm)
