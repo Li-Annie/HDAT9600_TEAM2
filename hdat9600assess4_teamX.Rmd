@@ -417,21 +417,6 @@ binnedplot(predict(reduced_interactions2), residuals(aic_suggest_mod))
 
 *The variance of the residuals in the binned residual plot seems to be constant and evenly distributed.*
 
-```{r, Task1-Pseudo-R2-reduced model}
-options(scipen=999)
-# Checking the fit of the reduced model using Pseudo-R2
-PseudoR2(aic_suggest_mod, which = "all")
-```
-
-```{r, Task1-Pseudo-R2-reduced model with interaction}
-options(scipen=999)
-# Checking the fit of the full model using Pseudo-R2
-PseudoR2(reduced_interactions2, which = "all")
-
-```
-
-*The Pseudo-R2 is slightly better in the model with the interaction compared to the one without as the Pseudo R2 values are slightly larger meaning that the model with interaction has a slight better fit.*
-
 ```{r, Task1-Brier score}
 # Changing the variable into numeric so doesn't run into error when knitting
 icu_sub$in_hospital_death <- as.numeric(icu_sub$in_hospital_death)
