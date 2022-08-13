@@ -3,8 +3,8 @@ title: "HDAT9600 Final Team Assignment"
 author: "Team 2"
 date: "insert date of completion here"
 output:
-  html_document: default
   word_document: default
+  html_document: default
 subtitle: Please see course outline / 'Announcements' for submission deadline
 editor_options:
   markdown:
@@ -14,7 +14,7 @@ editor_options:
 ```{r setup, include=FALSE}
 # leave this code here, but feel free to adjust the options or add some more
 # see the knitr documentation for details
-  knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=6)
+  knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=5)
 library(dplyr)
 library(ggplot2)
 library(arm)
@@ -266,63 +266,29 @@ summary(icu_sub)
 
 ```
 
-*We had a look at all the variables in the dataset before making a
-selection of 9 variables which we will investigate.*
+*We had a look at all the variables in the dataset before making a selection of 9 variables which we will investigate.*
 
-*We selected the predictor variables (age, length of stay, ICU type,
-SOFA score, maximum fractional inspired oxygen (FiO2), minimum Glasgow
-Coma Score (GCS), maximum heart rate and minimum respiration rate) to
-predict the risk of in-hospital death.*
+*We selected the predictor variables (age, length of stay, ICU type, SOFA score, maximum fractional inspired oxygen (FiO2), minimum Glasgow Coma Score (GCS), maximum heart rate and minimum respiration rate) to predict the risk of in-hospital death.*
 
-*An interesting finding with the summary statistics is that there might
-be issues with the data quality. As seen in the summary statistics of
-length of stay and SOFA scores, the minimum value is negative which is
-not possible as length of stay cannot be negative and SOFA scores range
-from 0-24.*
+*An interesting finding with the summary statistics is that there might be issues with the data quality. As seen in the summary statistics of length of stay and SOFA scores, the minimum value is negative which is not possible as length of stay cannot be negative and SOFA scores range from 0-24.*
 
 **Background Research supporting the selection of predictor variables**
 
-*Based on the article "Relationship between age and in-hospital
-mortality during 15,345,025 non-surgical hospitalizations" from the
-Archives of Medical Science, the findings support in hospital death to
-be associated with the age of the patients. In this study, older
-patients have a greater odds of dying in hospital than younger
-patients.*
+*Based on the article "Relationship between age and in-hospital mortality during 15,345,025 non-surgical hospitalizations" from the Archives of Medical Science, the findings support in hospital death to be associated with the age of the patients. In this study, older patients have a greater odds of dying in hospital than younger patients.*
 
-*Another article, "Patient length of stay and mortality prediction: A
-survey" from PubMed suggests that the longer length of stay in hospital
-is a parameter linked to the severity of the health conditions,
-therefore may be associated with in hospital mortality.*
+*Another article, "Patient length of stay and mortality prediction: A survey" from PubMed suggests that the longer length of stay in hospital is a parameter linked to the severity of the health conditions, therefore may be associated with in hospital mortality.*
 
-*In this article, "Infection as an independent risk factor for mortality
-in the surgical intensive care unit" from National Library of Medicine
-which evaluated mortality in hospital from surgical and medical ICU,
-points out that certain types of ICU are associated with high in
-hospital mortality.*
+*In this article, "Infection as an independent risk factor for mortality in the surgical intensive care unit" from National Library of Medicine which evaluated mortality in hospital from surgical and medical ICU, points out that certain types of ICU are associated with high in hospital mortality.*
 
-*Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria,
-and qSOFA Score for In-Hospital Mortality Among Adults With Suspected
-Infection Admitted to the Intensive Care Unit" from PubMed propose that
-high SOFA scores are associated with higher in hospital mortality.*
+*Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria, and SOFA Score for In-Hospital Mortality Among Adults With Suspected Infection Admitted to the Intensive Care Unit" from PubMed propose that high SOFA scores are associated with higher in hospital mortality.*
 
-*According to "Severity of respiratory failure at admission and
-in-hospital mortality in patients with COVID-19: a prospective
-observational multicentre study" from BMJ reports high FiO2 is
-independently associated with in-hospital mortality.*
+*According to "Severity of respiratory failure at admission and in-hospital mortality in patients with COVID-19: a prospective observational multicentre study" from BMJ reports high FiO2 is independently associated with in-hospital mortality.*
 
-*In addition, "In-hospital mortality and the Glasgow Coma Scale in the
-first 72 hours after traumatic brain injury" from SciELO suggests that
-low GCS scores are associated with in-hospital mortality.*
+*In addition, "In-hospital mortality and the Glasgow Coma Scale in the first 72 hours after traumatic brain injury" from SciELO suggests that low GCS scores are associated with in-hospital mortality.*
 
-*Furthermore, "Heart rate at admission is a predictor of in-hospital
-mortality in patients with acute coronary syndromes" from PubMed propose
-that high heart rate can be associated with in-hospital mortality in
-certain sub-population of patients.*
+*Furthermore, "Heart rate at admission is a predictor of in-hospital mortality in patients with acute coronary syndromes" from PubMed propose that high heart rate can be associated with in-hospital mortality in certain sub-population of patients.*
 
-*Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and
-all-cause mortality in community-dwelling older men and women" from ERS
-reports that the association between low respiratory rate and in
-hospital and short term mortality.*
+*Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between low respiratory rate and in hospital and short term mortality.*
 
 ```{r Task1-EDAii}
 # Examining the structure of the subset of dataset
@@ -330,15 +296,9 @@ str(icu_sub)
 
 ```
 
-*The subset ICU dataset contains 2061 observations of 9 variables. The
-outcome variable is death in hospital and the predictor variables are
-type of ICU, age, length of stay, SOFA scores, maximum FiO2, minimum
-respiration rate, maximum heart rate and minimum GCS.*
+*The subset ICU dataset contains 2061 observations of 9 variables. The outcome variable is death in hospital and the predictor variables are type of ICU, age, length of stay, SOFA scores, maximum FiO2, minimum respiration rate, maximum heart rate and minimum GCS.*
 
 ```{r, Task1-EDAiii}
-# Check the summary of the dataset
-summary(icu_sub)
-
 # Check whether there is any missing data with the subset of variables
 as.data.frame(colSums(! is.na(icu_sub)))
 
@@ -362,15 +322,7 @@ plots <- for (column in names) {
 
 ```
 
-*Looking at the histograms, it is evident that majority of the patients
-did not die in the hospital and the distribution for all predictor
-variables except type of ICU for survivor and died in hospital are very
-similar. An interesting observation is that for the variable minimum
-respiration rate, the mean respiration rate is higher in those that died
-in hospital than those who survived. Another observation which aligns
-with the research is the predictor variable age, the mean age of
-patients is higher in the cohort that died in the hospital than those
-who survived.*
+*Looking at the histograms, it is evident that majority of the patients did not die in the hospital and the distribution for all predictor variables except type of ICU for survivor and died in hospital are very similar. An interesting observation is that for the variable minimum respiration rate, the mean respiration rate is higher in those that died in hospital than those who survived. Another observation which aligns with the research is the predictor variable age, the mean age of patients is higher in the cohort that died in the hospital than those who survived.*
 
 ```{r, Task1-age}
 # Fitting univariate logistic regression models
@@ -427,10 +379,7 @@ for (model in glm_mod) {
 }
 ```
 
-*From the analysis of deviance, it seems that the age, type of ICU, SOFA
-scores, minimum respiration rate, maximum heart rate and low GCS are
-significant predictors compared to the null model as their p-values are
-below 0.05.*
+*From the analysis of deviance, it seems that the age, type of ICU, SOFA scores, minimum respiration rate, maximum heart rate and low GCS are significant predictors compared to the null model as their p-values are below 0.05.*
 
 ```{r, Task1-AIC}
 # Using AIC for model selection
@@ -439,36 +388,7 @@ aic_suggest_mod <- stepAIC(full_mod, trace = F)
 summary(aic_suggest_mod)
 ```
 
-*The AIC suggested models only contain four predictor variables which
-are type of ICU, age, SOFA score and minimum respiration rate. Although
-this is the best model according to AIC indication, we still wanted to
-include maximum heart rate and minimum GCS and complete 3 more tests of
-analysis of deviance to compare the models.*
-
-```{r, Task1-test model1}
-# analysis of deviance
-test_mod_glm1 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + HR_max + GCS_min,
-    family = binomial, data = icu_sub)
-print(anova(aic_suggest_mod, test_mod_glm1, test = "Chi"))
-```
-
-```{r, Task1-test model2}
-# analysis of deviance
-test_mod_glm2 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + GCS_min,
-    family = binomial, data = icu_sub)
-print(anova(aic_suggest_mod, test_mod_glm2, test = "Chi"))
-```
-
-```{r, Task1-test model3}
-# analysis of deviance
-test_mod_glm3 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + HR_max,
-    family = binomial, data = icu_sub)
-print(anova(aic_suggest_mod, test_mod_glm3, test = "Chi"))
-```
-
-*The 3 analysis of deviance test suggest there are only 4 significant
-predictors of deaths in hospital as suggested by AIC and these are ICU
-type, age, SOFA scores and minimum respiration rate.*
+*The AIC suggested models only contain four predictor variables which are type of ICU, age, SOFA score and minimum respiration rate. Next, we will explore whether there are any interactions between the four predictor variables.*
 
 ```{r, Task1- interactions}
 # Checking if the reduced model is better fitted with interactions according to the AIC
@@ -476,10 +396,7 @@ type, age, SOFA scores and minimum respiration rate.*
 summary(reduced_interactions)
 ```
 
-*After checking the summary statistics for the logistic regression model
-including the 2 interactions, the age:SOFA interaction have a p-value
-above 0.05, which means that it is not statistically significant.
-Therefore, it is reasonable to drop this interaction.*
+*After checking the summary statistics for the logistic regression model including the 2 interactions, the age:SOFA interaction have a p-value above 0.05, which means that it is not statistically significant. Therefore, it is reasonable to drop this interaction.*
 
 ```{r, Task1- interactions comparison}
 # Refitting the model with one interaction term 
@@ -491,17 +408,14 @@ summary(reduced_interactions2)
 print(anova(aic_suggest_mod, reduced_interactions2, test = "Chi"))
 ```
 
-*It seems that the model including the interaction term is preferred
-over the model without the interaction as shown by the p-value of
-0.02156.*
+*It seems that the model including the interaction term is preferred over the model without the interaction as shown by the p-value of 0.02156.*
 
 ```{r, Task1-binned residual}
 # Checking the model fit using binned residual plot
 binnedplot(predict(reduced_interactions2), residuals(aic_suggest_mod))
 ```
 
-*The variance of the residuals in the binned residual plot seems to be
-constant and evenly distributed.*
+*The variance of the residuals in the binned residual plot seems to be constant and evenly distributed.*
 
 ```{r, Task1-Pseudo-R2-reduced model}
 options(scipen=999)
@@ -516,9 +430,7 @@ PseudoR2(reduced_interactions2, which = "all")
 
 ```
 
-*The Pseudo-R2 is slightly better in the model with the interaction
-compared to the one without as the Pseudo R2 values are slightly larger
-meaning that the model with interaction has a slight better fit.*
+*The Pseudo-R2 is slightly better in the model with the interaction compared to the one without as the Pseudo R2 values are slightly larger meaning that the model with interaction has a slight better fit.*
 
 ```{r, Task1-Brier score}
 # Changing the variable into numeric so doesn't run into error when knitting
@@ -535,9 +447,7 @@ brier_score_reduced <- mean((pred_prob_reduced_interactions2 - icu_sub$in_hospit
 brier_score_reduced
 ```
 
-*The difference in Brier scores between the two is very small, therefore
-the reduced model with interaction is preferred based on the analysis of
-deviance conducted earlier.*
+*The difference in Brier scores between the two is very small, therefore the reduced model with interaction is preferred based on the analysis of deviance conducted earlier.*
 
 ```{r, refit model to unimputed data}
 unimputed <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + 
@@ -557,36 +467,15 @@ icu_sub$in_hospital_death <- as.factor(icu_sub$in_hospital_death)
 reduced_null <-glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
 
 # calculate p-value 
-print(anova(reduced_null, reduced_interactions2, test = "Chi"))
+print(anova(reduced_null, reduced_interactions2, test = "Chi")) 
 ```
 
-*Looking through the summary statistics and p-values of the imputed and
-the unimputed datasets, the beta estimates of the predictor variables
-altered slightly, and the ICU (Cardiac Surgery Recovery Unit) and SOFA
-score interaction became insignificant in the unimputed dataset. The AIC
-for the unimputed dataset is 286.33 which is much better than the AIC
-for the imputed dataset of 1475.3. This means that the model is a better
-fit for the unimputed dataset.*
+*Looking through the summary statistics and p-values of the imputed and the unimputed datasets, the beta estimates of the predictor variables altered slightly, and the ICU (Cardiac Surgery Recovery Unit) and SOFA score interaction became insignificant in the unimputed dataset. The AIC for the unimputed dataset is 286.33 which is much better than the AIC for the imputed dataset of 1475.3. This means that the model is a better fit for the unimputed dataset.*
 
 **Summary Findings**
 
-*After comparing different models, the final model we have fitted
-contains the predictor variables (type of ICU, age, SOFA scores and
-minimum respiration rate) and an interaction between type of ICU and
-SOFA scores. The p-value is 0 if rounded to 3 decimal places which
-suggests that the model is better than the null model.*\
-*Through the analysis of deviance, it is apparent that the model with an
-interaction is the preferred model over the one without as shown by the
-p-value of 0.02156. This is also confirmed by the Pseudo R2 values.
-Although the Brier Scores show the model without the interaction has a
-slightly better fit, but the differences is negligible if rounded to 3
-decimal places where both values would be 1.107. The binned residual
-plot also did not raise any concerns as the variance of the residuals in
-the binned residual plot seems to be constant and evenly distributed. In
-conclusion, the findings of this study suggests that the in-hospital
-mortality rate is associated with type of ICU, age of the patient, SOFA
-scores and minimum respiration rate out of the initial subset of the
-predictor variables that were selected.*
+*After comparing different models, the final model we have fitted contains the predictor variables (type of ICU, age, SOFA scores and minimum respiration rate) and an interaction between type of ICU and SOFA scores. The p-value is 0 if rounded to 3 decimal places which suggests that the model is better than the null model.*\
+*Through the analysis of deviance, it is apparent that the model with an interaction is the preferred model over the one without as shown by the p-value of 0.02156. This is also confirmed by the Pseudo R2 values. Although the Brier Scores show the model without the interaction has a slightly better fit, but the differences is negligible if rounded to 3 decimal places where both values would be 1.107. The binned residual plot also did not raise any concerns as the variance of the residuals in the binned residual plot seems to be constant and evenly distributed. In conclusion, the findings of this study suggests that the in-hospital mortality rate is associated with type of ICU, age of the patient, SOFA scores and minimum respiration rate out of the initial subset of the predictor variables that were selected.*
 
 # Task 2
 
