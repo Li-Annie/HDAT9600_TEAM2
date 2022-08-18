@@ -1,0 +1,325 @@
+---
+title: "HDAT9600 Final Team Assignment"
+author: "Team 2"
+date: "Aug 18, 2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+subtitle: Please see course outline / 'Announcements' for submission deadline
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+# leave this code here, but feel free to adjust the options or add some more
+# see the knitr documentation for details
+knitr::opts_chunk$set(echo = TRUE, fig.width=12, fig.height=5)
+library(dplyr)
+library(ggplot2)
+library(arm)
+library(faraway)
+library(DescTools)
+library(rmarkdown)
+library(knitr)
+library(vtable)
+library(sjPlot)
+library(sjmisc)
+library(sjlabelled)
+library(tab)
+library(gtsummary)
+library(gridExtra)
+library(survival)
+library(survminer)
+icu_patients_df0 <- readRDS("icu_patients_df0.rds")
+icu_patients_df1 <- readRDS("icu_patients_df1.rds")
+```
+
+### Task 1
+
+```{r Task1-EDAi}
+# Subsetting the ICU dataset into variables of interest and removing rows where SOFA is negative 
+icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, SOFA, FiO2_max, RespRate_min) %>% filter(SOFA != -1)
+
+# Getting the summary statistics of the dataset
+sumtable(icu_sub)
+
+```
+*We had a look at all the variables in the dataset before making a selection of 6 variables which we will investigate.*
+
+*We selected the predictor variables (age,ICU type, SOFA score, maximum fractional inspired oxygen (FiO2) and minimum respiration rate) to predict the risk of in-hospital death.*
+
+**Background Research supporting the selection of predictor variables**
+
+_Based on the article "Relationship between age and in-hospital mortality during 15,345,025 non-surgical hospitalizations" from the Archives of Medical Science, the findings support in hospital death to be associated with the age of the patients. In this study, older patients have a greater odds of dying in hospital than younger patients._    
+_In this article, "Infection as an independent risk factor for mortality in the surgical intensive care unit" from National Library of Medicine which evaluated mortality in hospital from surgical and medical ICU, points out that certain types of ICU are associated with high in hospital mortality._     
+_Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria, and SOFA Score for In-Hospital Mortality Among Adults With Suspected Infection Admitted to the Intensive Care Unit" from PubMed propose that high SOFA scores are associated with higher in hospital mortality._    
+_According to "Severity of respiratory failure at admission and in-hospital mortality in patients with COVID-19: a prospective observational multicentre study" from BMJ reports high FiO2 is independently associated with in-hospital mortality._   
+_Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between low respiratory rate and in hospital and short term mortality._  
+
+
+*An interesting finding with the summary statistics is that there might be issues with the data quality. As seen in the summary statistics of SOFA scores, the minimum value is negative which is not possible as the SOFA scores range from 0-24 and we removed it as they are missing values.*
+
+```{r, Task1-EDAii-i, include=FALSE}
+# Check whether there is any missing data with the subset of variables
+colSums(is.na(icu_sub))
+```
+
+```{r, Task1-EDAii-ii}
+# Turn in_hospital_death variable to factor variables
+icu_sub$in_hospital_death <- as.integer(as.factor(icu_sub$in_hospital_death)) - 1
+```
+
+*The subset of ICU dataset has no missing data.*
+
+```{r, Task1-EDAiv}
+# for loop to produce all the plots to compare the distribution
+ names <- colnames(icu_sub[-c(1:2)])
+plots <- list()
+  for (column in names) {
+ plots[[column]] <- ggplot(data = icu_sub, aes(x = icu_sub[,column], fill = factor(in_hospital_death)))+ geom_histogram(bins = 30) + theme_minimal() + scale_x_continuous(expand = c(0,0)) + scale_y_continuous(expand = c(0,0)) + ggtitle(paste("Histogram of", column)) + labs(x = column, fill = "Deaths in Hospital") + facet_grid(in_hospital_death~., scales = "fixed")+ scale_fill_discrete(name = "Deaths in Hospital", labels = c("Survivor", "Died in Hospital"))
+}
+do.call(grid.arrange, plots)
+```
+
+_Looking at the histograms, it is evident that majority of the patients did not die in the hospital and the distribution for all predictor variables except type of ICU for survivor and died in hospital are very similar. An interesting observation is that for the variable minimum respiration rate, the mean respiration rate is higher in those that died in hospital than those who survived. Another observation which aligns with the research is the predictor variable age, the mean age of patients is higher in the cohort that died in the hospital than those who survived._  
+
+```{r, Task1-univariate_models, include = TRUE}
+# Fitting univariate logistic regression models
+age_glm <- glm(in_hospital_death ~ Age, family = binomial, data = icu_sub)
+Icu_type_glm <- glm(in_hospital_death ~ ICUType, family = binomial, data = icu_sub)
+SOFA_glm <- glm(in_hospital_death ~ SOFA, family = binomial, data = icu_sub)
+FiO2_glm <- glm(in_hospital_death ~ FiO2_max, family = binomial, data = icu_sub)
+RespRate_glm <- glm(in_hospital_death ~ RespRate_min, family = binomial, data = icu_sub)
+AIC(age_glm, Icu_type_glm, SOFA_glm, FiO2_glm, RespRate_glm)
+```
+
+```{r, Task1-ICUType, eval=TRUE, include = FALSE }
+# check stats of the models
+tab_model(age_glm, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE)
+tab_model(Icu_type_glm, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE, show.obs = FALSE)
+tab_model(SOFA_glm, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE, show.obs = FALSE)
+tab_model(FiO2_glm, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE, show.obs = FALSE)
+tab_model(RespRate_glm, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE, show.obs = FALSE)
+```
+
+```{r, Task1-AIC, eval=TRUE, include = TRUE}
+# Using AIC for model selection
+full_mod <- glm(in_hospital_death~., family = binomial, data = icu_sub)
+aic_suggest_mod <- stepAIC(full_mod, direction="both", scope=list(lower=~1, upper=~.^2), trace=F, data=icu_sub)
+tab_model(aic_suggest_mod, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE, show.obs = FALSE)
+
+```
+
+*The AIC suggested models only contain four predictor variables which are type of ICU, age, SOFA score and minimum respiration rate with 3 interactions which are ICUTypeCardiac Surgery Recovery Unit:SOFA, Age:SOFA and ICUTypeSurgical ICU:Age.*
+
+```{r, Task1- interactions comparison}
+# Model suggested by AIC
+reduced_interactions1 <- glm(in_hospital_death ~ ICUType + Age + SOFA + RespRate_min + 
+    ICUType:SOFA + Age:SOFA + ICUType:Age, family = binomial, data = icu_sub)
+
+# Tried to see if it dropping the minimum respiration rate would make any difference as the p-value is above 0.05
+reduced_interactions2 <- glm(in_hospital_death ~ ICUType + Age + SOFA + 
+    ICUType:SOFA + Age:SOFA + ICUType:Age, family = binomial, data = icu_sub)
+
+# display the results of both models
+tab_model(reduced_interactions1, reduced_interactions2, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE, show.obs = FALSE, dv.labels = c("reduced_interactions1", "reduced_interactions2"))
+
+# Running an analysis of deviance
+print(anova(reduced_interactions2, reduced_interactions1, test = "Chi"))
+
+```
+*From the analysis of deviance, the p-value is above 0.05, showing that minimum respiration rate is not a significant predictor of in-hospital deaths. Even though the AIC for the second model is 1438.2 which is 0.9 higher then the model fitted by earlier, the simpler model is preferred based on the analysis of deviance.* 
+
+```{r, Task1-binned residual}
+# Checking the model fit using binned residual plot
+binnedplot(predict(reduced_interactions2, type="response"), residuals(reduced_interactions2, type="response"))
+```
+
+*The variance of the residuals in the binned residual plot seems to be constant and evenly distributed.*
+
+```{r, Task1-Brier score}
+# Checking the goodness of fit of reduced model using Brier Score test
+pred_prob_reduced <- predict(reduced_interactions1, type = "response")
+brier_score_reduced <- mean((pred_prob_reduced - icu_sub$in_hospital_death)^2)
+brier_score_reduced
+
+# Checking the goodness of fit of reduced model with interaction using Brier Score test
+pred_prob_reduced_interactions2 <- predict(reduced_interactions2, type = "response")
+brier_score_reduced <- mean((pred_prob_reduced_interactions2 - icu_sub$in_hospital_death)^2)
+brier_score_reduced
+```
+
+*The difference in Brier scores between the two is very small, therefore the second model without minimum respiration rate is preferred based on the analysis of deviance conducted earlier.*
+
+```{r, refit model to unimputed data}
+unimputed <- glm(in_hospital_death ~ ICUType + Age + SOFA + 
+    ICUType:SOFA + Age:SOFA + ICUType:Age, family = binomial, data = icu_patients_df0)
+tab_model(unimputed, show.intercept = TRUE, show.est = TRUE, show.ci = FALSE, show.se = TRUE, show.p = TRUE, show.stat = TRUE, show.aic = TRUE, show.dev = TRUE, show.r2 = FALSE, show.fstat = TRUE, show.obs = FALSE)
+```
+
+```{r, Task1-p-value reduced unimputed}
+# calculate p-value 
+(p_unimputed <- 1 - pchisq(unimputed$null.deviance - unimputed$deviance, unimputed$df.null - unimputed$df.residual))
+(p_imputed <- 1 - pchisq(reduced_interactions2$null.deviance - reduced_interactions2$deviance, reduced_interactions2$df.null - reduced_interactions2$df.residual))
+```
+
+```{r, Task1-p-value reduced imputed}
+# null model
+reduced_null <-glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
+
+# calculate p-value 
+print(anova(reduced_null, reduced_interactions2, test = "Chi")) 
+```
+
+*Looking through the summary statistics and p-values of the imputed and the unimputed datasets, the ICUTypeSurgical ICU:Age interaction and Age:SOFA interaction became insignificant and in the unimputed dataset. The AIC for the unimputed dataset is 1476.9 which is much higher than the AIC for the imputed dataset of 1438.2. This means that the model is a better fit for the imputed dataset.*
+
+**Summary Findings**
+
+*After comparing different models, the final model we have fitted contains the predictor variables (type of ICU, age and SOFA scores) and with 3 interactions between type of ICU and age, type of ICU and SOFA scores, and age and SOFA scores. The p-value is 0 which suggests that the model is better than the null model.*\
+*Through the analysis of deviance, it is apparent that the model without the minimum respiration rate variable is the preferred model over the one with the variable as shown by the p-value above 0.05. Although the Brier Scores show the model with minimum respiration rate has a slightly better fit, but the differences is negligible if rounded to 3 decimal places where both values would be 1.107. The binned residual plot also did not raise any concerns as the variance of the residuals in the binned residual plot seems to be constant and evenly distributed. In conclusion, the findings of this study suggests that the in-hospital mortality rate is associated with the type of ICU, age of the patient and SOFA scores out of the initial subset of the predictor variables that were selected.*
+
+=====
+
+The explanatory variables I will use to predict survival will include:
+
+-   the `Age` demographic
+
+-   important vital signs: `HR_max`, `RespRate_max`, `SaO2_max`,
+    `NISysABP_max`, `Temp_max`, `GCS_max`, `Urine_max`
+
+-   important biochemical markers chosen based on clinical experience:
+    `Lactate_max`, `HCT_max`, `Creatinine_max`, `Na_max`
+
+I will create a subset of the `icu_patients_df1` with the above
+predictor variables, and the outcome variables `Days` (survival) and
+`Status` (censoring).
+
+```{r, Task2-subset, warning=FALSE}
+icu_sub2 <- icu_patients_df1 %>% dplyr::select(Days, Status, Age, HR_max, RespRate_max, SaO2_max, NISysABP_max, Urine_min, Temp_max, GCS_max, Lactate_max, HCT_max, Creatinine_max, Na_max)
+icu_sub2c <- na.omit(icu_sub2)
+attach(icu_sub2)
+```
+
+A brief exploratory data analysis is performed on the variables of
+interest. We show a survival curve for the overall data and density maps for each variable stratified by status.
+
+```{r, Task2-EDA, echo=FALSE, warning=FALSE}
+surv_fit <- survfit(Surv(Days, Status) ~ 1, data=icu_sub2)
+plot(surv_fit, xlab = "Days", ylab = "Survival probability", conf.int=0.95)
+p1 <- ggplot(icu_sub2, aes(x = Age, fill=Status)) + geom_density(alpha = 0.3)
+p2 <- ggplot(icu_sub2, aes(x = HR_max, fill=Status)) + geom_density(alpha = 0.3)
+p3 <- ggplot(icu_sub2, aes(x = RespRate_max, fill=Status)) + geom_density(alpha = 0.3)
+p4 <- ggplot(icu_sub2, aes(x = SaO2_max, fill=Status)) + geom_density(alpha = 0.3)
+p5 <- ggplot(icu_sub2, aes(x = NISysABP_max, fill=Status)) + geom_density(alpha = 0.3)
+p6 <- ggplot(icu_sub2, aes(x = Urine_min, fill=Status)) + geom_density(alpha = 0.3)
+p7 <- ggplot(icu_sub2, aes(x = Temp_max, fill=Status)) + geom_density(alpha = 0.3)
+p8 <- ggplot(icu_sub2, aes(x = GCS_max, fill=Status)) + geom_density(alpha = 0.3)
+p9 <- ggplot(icu_sub2, aes(x = Lactate_max, fill=Status)) + geom_density(alpha = 0.3)
+p10 <- ggplot(icu_sub2, aes(x = HCT_max, fill=Status)) + geom_density(alpha = 0.3)
+p11 <- ggplot(icu_sub2, aes(x = Creatinine_max, fill=Status)) + geom_density(alpha = 0.3)
+p12 <- ggplot(icu_sub2, aes(x = Na_max, fill=Status)) + geom_density(alpha = 0.3)
+grid.arrange(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12)
+# sumtable(icu_sub2)
+# icu_sub2 %>% tbl_summary(by=Status)
+```
+
+We will now fit some univariate models for these predictors.
+
+```{r survival-univariate, collapse=FALSE, warning=FALSE, rows.print = 25}
+surv_object <- Surv(Days, Status)
+coxmod_age <- coxph(surv_object ~ Age, data=icu_sub2)
+coxmod_HR <- coxph(surv_object ~ HR_max, data=icu_sub2)
+coxmod_RR <- coxph(surv_object ~ RespRate_max, data=icu_sub2)
+coxmod_O2 <- coxph(surv_object ~ SaO2_max, data=icu_sub2)
+coxmod_SBP <- coxph(surv_object ~ NISysABP_max, data=icu_sub2)
+coxmod_U <- coxph(surv_object ~ Urine_min, data=icu_sub2)
+coxmod_temp <- coxph(surv_object ~ Temp_max, data=icu_sub2)
+coxmod_GCS <- coxph(surv_object ~ GCS_max, data=icu_sub2)
+coxmod_lactate <- coxph(surv_object ~ Lactate_max, data=icu_sub2)
+coxmod_HCT <- coxph(surv_object ~ HCT_max, data=icu_sub2)
+coxmod_Cr <- coxph(surv_object ~ Creatinine_max, data=icu_sub2)
+coxmod_Na <- coxph(surv_object ~ Na_max, data=icu_sub2)
+# display the results
+data.frame(rbind(summary(coxmod_age)$coefficients, summary(coxmod_HR)$coefficients,
+summary(coxmod_RR)$coefficients, summary(coxmod_O2)$coefficients,
+summary(coxmod_SBP)$coefficients, summary(coxmod_U)$coefficients,
+summary(coxmod_temp)$coefficients, summary(coxmod_GCS)$coefficients, 
+summary(coxmod_lactate)$coefficients, summary(coxmod_HCT)$coefficients,
+summary(coxmod_Cr)$coefficients, summary(coxmod_Na)$coefficients))
+```
+
+From the univariate models, it appears `Age`, `RespRate_max`,
+`NISysABP_max`, `Temp_max`, `GCS_max`, `Urine_min`, `Lactate_max`,
+`Creatinine_max` are statistically significant predictors for survival.
+
+We now fit some multivariate models.
+
+1.  Full subset of predictors　`cox_mv_all`
+2.  Only those significant in the univariate models `cox_mv_uni`
+
+```{r function_to_simplify_summary, echo=FALSE}
+show_simple_sum <- function(cox_model){
+  sum <- summary(cox_model)
+  coef_results <- data.frame(sum$coefficients)
+  test_results <- rbind(sum$waldtest, sum$logtest, sum$sctest)
+  test_results <- data.frame(test_results, row.names=c("Wald test", "Likelihood ratio test", "Score (logrank) test"))
+  print(coef_results)
+  print(test_results)
+}
+
+show_test <- function(cox_model){
+  sum <- summary(cox_model)
+  test_results <- rbind(sum$waldtest, sum$logtest, sum$sctest)
+  test_results <- data.frame(test_results, row.names=c("Wald test", "Likelihood ratio test", "Score (logrank) test"))
+  print(test_results)
+}
+```
+
+```{r coxmod_mv, rows.print = 25}
+surv_object_c <- Surv(icu_sub2c$Days, icu_sub2c$Status)
+# use all variables
+coxmod_mv_all <- coxph(surv_object_c ~ Age + HR_max + RespRate_max + SaO2_max + NISysABP_max + Urine_min + Temp_max + GCS_max + Lactate_max + HCT_max + Creatinine_max + Na_max, data=icu_sub2c)
+show_simple_sum(coxmod_mv_all)
+# use only siginificant variables, according to the univariate models
+coxmod_mv_uni <- coxph(surv_object_c ~ Age + RespRate_max + NISysABP_max + Urine_min + Temp_max + GCS_max + Lactate_max + HCT_max + Creatinine_max, data=icu_sub2c)
+show_simple_sum(coxmod_mv_uni)
+```
+
+```{r reduce_coxmod_mv_vars, rows.print = 25}
+# Accoding to the result of coxmod_mv_all, just use only significant vars
+coxmod_mv_all_redc <- coxph(surv_object_c ~ Age + HR_max + SaO2_max + Temp_max + GCS_max + Lactate_max + HCT_max + Creatinine_max + Na_max, data=icu_sub2c)
+show_test(coxmod_mv_all_redc) # show only test results because of page restriction
+# Accoding to the result of coxmod_mv_uni, just use only significant vars
+coxmod_mv_uni_redc <- coxph(surv_object_c ~ Age + Temp_max + GCS_max + Lactate_max + HCT_max + Creatinine_max, data=icu_sub2c)
+show_test(coxmod_mv_uni_redc) # show only test results because of page restriction
+```
+
+```{r AIC, collapse = FALSE}
+# display AICs of models
+AIC(coxmod_mv_all, coxmod_mv_uni, coxmod_mv_all_redc, coxmod_mv_uni_redc)
+```
+
+```{r anova for mv models, collapse = FALSE}
+# display results of anova, just show p values to reduce page
+print(anova(coxmod_mv_all_redc, coxmod_mv_all)[[4]][2])
+```
+
+We compared Akaike’s Information Criterion (AIC) of four models: `coxmod_mv_all`: a model with all variables , `coxmod_mv_uni`: a model with only significant variables in univariate models , `coxmod_mv_all_redc`: a model with non-significant variables removed from `coxmod_mv_all`, and `coxmod_mv_uni_redc`: a model with non-significant variables removed from `coxmod_mv_uni`. We found that the `coxmod_mv_all_redc` was the best model and chose it as our final model. Also, according to the p-value of anova, it is acceptable to choose a model with fewer variables. It was shown that the evaluations of the model by the AIC and anova function was improved by removing the variables `RespRate_max`, `NISysABP_max`, `Urine_min`.
+
+```{r coxzph}
+# confirm PH assumption
+prop <- cox.zph(coxmod_mv_all_redc)
+prop
+```
+
+Confirming the proportional hazard assumption of each variable by coxzph, the p-values are small for three variables, and the global p-value are also low. Therefore, we see that there are violations that must be addressed in this model.
+
+```{r coxzph with strata}
+om.split <- survSplit( Surv(Days, Status) ~ ., data = icu_sub2c, cut=c(365, 730), episode= "tgroup")
+coxmod_strata <- coxph(Surv(Days, Status) ~ Age + HR_max:strata(tgroup) + SaO2_max + Temp_max + HCT_max + Creatinine_max + Na_max, data=om.split)
+cox.zph(coxmod_strata)
+show_simple_sum(coxmod_strata)
+```
+First, Days were grouped by <365, 365-730, >730 to three groups, and only HR_max was used to switch coefficients at the delimitations. Since GCS and Lactate are difficult to hold the PH assumptions even after this process, we decided to remove them as explanatory variables. We then confirmed that the PH assumption was valid for all variables and global. This process limited the significant variables to Age, HCT_max, and Creatine_max. For HR with stratification, the variables are significant for periods of less than 365 days and more than 730 days, but are no longer significant for the periods in between.
