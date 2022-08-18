@@ -1,7 +1,7 @@
 ---
-title: "HDAT9600 Final Team Assignment"
-author: "Team 2"
-date: "Aug 18, 2022"
+title: "HDAT9600 Final Team 2 Assignment"
+author: "Team 2: Annie, Jason, Yosuke, Tiffany"
+date: "Aug 19, 2022"
 output:
   html_document:
     df_print: paged
@@ -46,20 +46,45 @@ icu_sub <- icu_patients_df1 %>% dplyr::select(in_hospital_death, ICUType, Age, S
 sumtable(icu_sub)
 
 ```
-*We had a look at all the variables in the dataset before making a selection of 6 variables which we will investigate.*
 
-*We selected the predictor variables (age,ICU type, SOFA score, maximum fractional inspired oxygen (FiO2) and minimum respiration rate) to predict the risk of in-hospital death.*
+*We had a look at all the variables in the dataset before making a
+selection of 6 variables which we will investigate.*
+
+*We selected the predictor variables (age,ICU type, SOFA score, maximum
+fractional inspired oxygen (FiO2) and minimum respiration rate) to
+predict the risk of in-hospital death.*
 
 **Background Research supporting the selection of predictor variables**
 
-_Based on the article "Relationship between age and in-hospital mortality during 15,345,025 non-surgical hospitalizations" from the Archives of Medical Science, the findings support in hospital death to be associated with the age of the patients. In this study, older patients have a greater odds of dying in hospital than younger patients._    
-_In this article, "Infection as an independent risk factor for mortality in the surgical intensive care unit" from National Library of Medicine which evaluated mortality in hospital from surgical and medical ICU, points out that certain types of ICU are associated with high in hospital mortality._     
-_Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria, and SOFA Score for In-Hospital Mortality Among Adults With Suspected Infection Admitted to the Intensive Care Unit" from PubMed propose that high SOFA scores are associated with higher in hospital mortality._    
-_According to "Severity of respiratory failure at admission and in-hospital mortality in patients with COVID-19: a prospective observational multicentre study" from BMJ reports high FiO2 is independently associated with in-hospital mortality._   
-_Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and all-cause mortality in community-dwelling older men and women" from ERS reports that the association between low respiratory rate and in hospital and short term mortality._  
+*Based on the article "Relationship between age and in-hospital
+mortality during 15,345,025 non-surgical hospitalizations" from the
+Archives of Medical Science, the findings support in hospital death to
+be associated with the age of the patients. In this study, older
+patients have a greater odds of dying in hospital than younger
+patients.*\
+*In this article, "Infection as an independent risk factor for mortality
+in the surgical intensive care unit" from National Library of Medicine
+which evaluated mortality in hospital from surgical and medical ICU,
+points out that certain types of ICU are associated with high in
+hospital mortality.*\
+*Additionally, "Prognostic Accuracy of the SOFA Score, SIRS Criteria,
+and SOFA Score for In-Hospital Mortality Among Adults With Suspected
+Infection Admitted to the Intensive Care Unit" from PubMed propose that
+high SOFA scores are associated with higher in hospital mortality.*\
+*According to "Severity of respiratory failure at admission and
+in-hospital mortality in patients with COVID-19: a prospective
+observational multicentre study" from BMJ reports high FiO2 is
+independently associated with in-hospital mortality.*\
+*Lastly, "Mean nocturnal respiratory rate predicts cardiovascular and
+all-cause mortality in community-dwelling older men and women" from ERS
+reports that the association between low respiratory rate and in
+hospital and short term mortality.*
 
-
-*An interesting finding with the summary statistics is that there might be issues with the data quality. As seen in the summary statistics of SOFA scores, the minimum value is negative which is not possible as the SOFA scores range from 0-24 and we removed it as they are missing values.*
+*An interesting finding with the summary statistics is that there might
+be issues with the data quality. As seen in the summary statistics of
+SOFA scores, the minimum value is negative which is not possible as the
+SOFA scores range from 0-24 and we removed it as they are missing
+values.*
 
 ```{r, Task1-EDAii-i, include=FALSE}
 # Check whether there is any missing data with the subset of variables
@@ -83,7 +108,15 @@ plots <- list()
 do.call(grid.arrange, plots)
 ```
 
-_Looking at the histograms, it is evident that majority of the patients did not die in the hospital and the distribution for all predictor variables except type of ICU for survivor and died in hospital are very similar. An interesting observation is that for the variable minimum respiration rate, the mean respiration rate is higher in those that died in hospital than those who survived. Another observation which aligns with the research is the predictor variable age, the mean age of patients is higher in the cohort that died in the hospital than those who survived._  
+*Looking at the histograms, it is evident that majority of the patients
+did not die in the hospital and the distribution for all predictor
+variables except type of ICU for survivor and died in hospital are very
+similar. An interesting observation is that for the variable minimum
+respiration rate, the mean respiration rate is higher in those that died
+in hospital than those who survived. Another observation which aligns
+with the research is the predictor variable age, the mean age of
+patients is higher in the cohort that died in the hospital than those
+who survived.*
 
 ```{r, Task1-univariate_models, include = TRUE}
 # Fitting univariate logistic regression models
@@ -112,7 +145,10 @@ tab_model(aic_suggest_mod, show.intercept = TRUE, show.est = TRUE, show.ci = FAL
 
 ```
 
-*The AIC suggested models only contain four predictor variables which are type of ICU, age, SOFA score and minimum respiration rate with 3 interactions which are ICUTypeCardiac Surgery Recovery Unit:SOFA, Age:SOFA and ICUTypeSurgical ICU:Age.*
+*The AIC suggested models only contain four predictor variables which
+are type of ICU, age, SOFA score and minimum respiration rate with 3
+interactions which are ICUTypeCardiac Surgery Recovery Unit:SOFA,
+Age:SOFA and ICUTypeSurgical ICU:Age.*
 
 ```{r, Task1- interactions comparison}
 # Model suggested by AIC
@@ -130,14 +166,20 @@ tab_model(reduced_interactions1, reduced_interactions2, show.intercept = TRUE, s
 print(anova(reduced_interactions2, reduced_interactions1, test = "Chi"))
 
 ```
-*From the analysis of deviance, the p-value is above 0.05, showing that minimum respiration rate is not a significant predictor of in-hospital deaths. Even though the AIC for the second model is 1438.2 which is 0.9 higher then the model fitted by earlier, the simpler model is preferred based on the analysis of deviance.* 
+
+*From the analysis of deviance, the p-value is above 0.05, showing that
+minimum respiration rate is not a significant predictor of in-hospital
+deaths. Even though the AIC for the second model is 1438.2 which is 0.9
+higher then the model fitted by earlier, the simpler model is preferred
+based on the analysis of deviance.*
 
 ```{r, Task1-binned residual}
 # Checking the model fit using binned residual plot
 binnedplot(predict(reduced_interactions2, type="response"), residuals(reduced_interactions2, type="response"))
 ```
 
-*The variance of the residuals in the binned residual plot seems to be constant and evenly distributed.*
+*The variance of the residuals in the binned residual plot seems to be
+constant and evenly distributed.*
 
 ```{r, Task1-Brier score}
 # Checking the goodness of fit of reduced model using Brier Score test
@@ -151,7 +193,15 @@ brier_score_reduced <- mean((pred_prob_reduced_interactions2 - icu_sub$in_hospit
 brier_score_reduced
 ```
 
-*The difference in Brier scores between the two is very small, therefore the second model without minimum respiration rate is preferred based on the analysis of deviance conducted earlier.*
+*The difference in Brier scores between the two is very small, therefore
+the second model without minimum respiration rate is preferred based on
+the analysis of deviance conducted earlier.*
+
+Unsurprisingly, according to our model `reduced_interactions2`, an
+increase in `Age` and `SOFA` (Sequential Organ Failure Assessment) score
+increased mortality. For every year increase of `Age`, there is \~4%
+increase in mortality. For every `SOFA` point increase, there is a \~58%
+increase in mortality.
 
 ```{r, refit model to unimputed data}
 unimputed <- glm(in_hospital_death ~ ICUType + Age + SOFA + 
@@ -173,12 +223,32 @@ reduced_null <-glm(in_hospital_death ~ 1, family = binomial, data = icu_sub)
 print(anova(reduced_null, reduced_interactions2, test = "Chi")) 
 ```
 
-*Looking through the summary statistics and p-values of the imputed and the unimputed datasets, the ICUTypeSurgical ICU:Age interaction and Age:SOFA interaction became insignificant and in the unimputed dataset. The AIC for the unimputed dataset is 1476.9 which is much higher than the AIC for the imputed dataset of 1438.2. This means that the model is a better fit for the imputed dataset.*
+*Looking through the summary statistics and p-values of the imputed and
+the unimputed datasets, the ICUTypeSurgical ICU:Age interaction and
+Age:SOFA interaction became insignificant and in the unimputed dataset.
+The AIC for the unimputed dataset is 1476.9 which is much higher than
+the AIC for the imputed dataset of 1438.2. This means that the model is
+a better fit for the imputed dataset.*
 
 **Summary Findings**
 
-*After comparing different models, the final model we have fitted contains the predictor variables (type of ICU, age and SOFA scores) and with 3 interactions between type of ICU and age, type of ICU and SOFA scores, and age and SOFA scores. The p-value is 0 which suggests that the model is better than the null model.*\
-*Through the analysis of deviance, it is apparent that the model without the minimum respiration rate variable is the preferred model over the one with the variable as shown by the p-value above 0.05. Although the Brier Scores show the model with minimum respiration rate has a slightly better fit, but the differences is negligible if rounded to 3 decimal places where both values would be 1.107. The binned residual plot also did not raise any concerns as the variance of the residuals in the binned residual plot seems to be constant and evenly distributed. In conclusion, the findings of this study suggests that the in-hospital mortality rate is associated with the type of ICU, age of the patient and SOFA scores out of the initial subset of the predictor variables that were selected.*
+*After comparing different models, the final model we have fitted
+contains the predictor variables (type of ICU, age and SOFA scores) and
+with 3 interactions between type of ICU and age, type of ICU and SOFA
+scores, and age and SOFA scores. The p-value is 0 which suggests that
+the model is better than the null model.*\
+*Through the analysis of deviance, it is apparent that the model without
+the minimum respiration rate variable is the preferred model over the
+one with the variable as shown by the p-value above 0.05. Although the
+Brier Scores show the model with minimum respiration rate has a slightly
+better fit, but the differences is negligible if rounded to 3 decimal
+places where both values would be 1.107. The binned residual plot also
+did not raise any concerns as the variance of the residuals in the
+binned residual plot seems to be constant and evenly distributed. In
+conclusion, the findings of this study suggests that the in-hospital
+mortality rate is associated with the type of ICU, age of the patient
+and SOFA scores out of the initial subset of the predictor variables
+that were selected.*
 
 =====
 
@@ -203,7 +273,8 @@ attach(icu_sub2)
 ```
 
 A brief exploratory data analysis is performed on the variables of
-interest. We show a survival curve for the overall data and density maps for each variable stratified by status.
+interest. We show a survival curve for the overall data and density maps
+for each variable stratified by status.
 
 ```{r, Task2-EDA, echo=FALSE, warning=FALSE}
 surv_fit <- survfit(Surv(Days, Status) ~ 1, data=icu_sub2)
@@ -306,7 +377,17 @@ AIC(coxmod_mv_all, coxmod_mv_uni, coxmod_mv_all_redc, coxmod_mv_uni_redc)
 print(anova(coxmod_mv_all_redc, coxmod_mv_all)[[4]][2])
 ```
 
-We compared Akaike’s Information Criterion (AIC) of four models: `coxmod_mv_all`: a model with all variables , `coxmod_mv_uni`: a model with only significant variables in univariate models , `coxmod_mv_all_redc`: a model with non-significant variables removed from `coxmod_mv_all`, and `coxmod_mv_uni_redc`: a model with non-significant variables removed from `coxmod_mv_uni`. We found that the `coxmod_mv_all_redc` was the best model and chose it as our final model. Also, according to the p-value of anova, it is acceptable to choose a model with fewer variables. It was shown that the evaluations of the model by the AIC and anova function was improved by removing the variables `RespRate_max`, `NISysABP_max`, `Urine_min`.
+We compared Akaike's Information Criterion (AIC) of four models:
+`coxmod_mv_all`: a model with all variables , `coxmod_mv_uni`: a model
+with only significant variables in univariate models ,
+`coxmod_mv_all_redc`: a model with non-significant variables removed
+from `coxmod_mv_all`, and `coxmod_mv_uni_redc`: a model with
+non-significant variables removed from `coxmod_mv_uni`. We found that
+the `coxmod_mv_all_redc` was the best model and chose it as our final
+model. Also, according to the p-value of anova, it is acceptable to
+choose a model with fewer variables. It was shown that the evaluations
+of the model by the AIC and anova function was improved by removing the
+variables `RespRate_max`, `NISysABP_max`, `Urine_min`.
 
 ```{r coxzph}
 # confirm PH assumption
@@ -314,7 +395,10 @@ prop <- cox.zph(coxmod_mv_all_redc)
 prop
 ```
 
-Confirming the proportional hazard assumption of each variable by coxzph, the p-values are small for three variables, and the global p-value are also low. Therefore, we see that there are violations that must be addressed in this model.
+Confirming the proportional hazard assumption of each variable by
+coxzph, the p-values are small for three variables, and the global
+p-value are also low. Therefore, we see that there are violations that
+must be addressed in this model.
 
 ```{r coxzph with strata}
 om.split <- survSplit( Surv(Days, Status) ~ ., data = icu_sub2c, cut=c(365, 730), episode= "tgroup")
@@ -322,4 +406,38 @@ coxmod_strata <- coxph(Surv(Days, Status) ~ Age + HR_max:strata(tgroup) + SaO2_m
 cox.zph(coxmod_strata)
 show_simple_sum(coxmod_strata)
 ```
-First, Days were grouped by <365, 365-730, >730 to three groups, and only HR_max was used to switch coefficients at the delimitations. Since GCS and Lactate are difficult to hold the PH assumptions even after this process, we decided to remove them as explanatory variables. We then confirmed that the PH assumption was valid for all variables and global. This process limited the significant variables to Age, HCT_max, and Creatine_max. For HR with stratification, the variables are significant for periods of less than 365 days and more than 730 days, but are no longer significant for the periods in between.
+
+First, Days were grouped by \<365, 365-730, \>730 to three groups, and
+only HR_max was used to switch coefficients at the delimitations. Since
+GCS and Lactate are difficult to hold the PH assumptions even after this
+process, we decided to remove them as explanatory variables. We then
+confirmed that the PH assumption was valid for all variables and global.
+This process limited the significant variables to Age, HCT_max, and
+Creatine_max. For HR with stratification, the variables are significant
+for periods of less than 365 days and more than 730 days, but are no
+longer significant for the periods in between.
+
+Similar to our `reduced_interactions2` GLM model, `coxmod_strata` showed
+for every year increase of `Age`, there is \~3% increase in mortality.
+Unsurprisingly, increases in maximum oxygen saturation (OR 0.97) and
+haematocrit were protective (OR 0.98). Also unsurprisingly, increases in
+creatinine (suggestive of poorer kidney function) increased mortality
+(OR 1.1). Interestingly, increase in maximum temperature was protective
+(OR 0.92); so was increase in maximum heart rate for `Days` \> 365.
+
+```{r coxzph with strata unimpute}
+icu_sub2u <- icu_patients_df0 %>% dplyr::select(Days, Status, Age, HR_max, RespRate_max, SaO2_max, NISysABP_max, Urine_min, Temp_max, GCS_max, Lactate_max, HCT_max, Creatinine_max, Na_max)
+icu_sub2uc <- na.omit(icu_sub2u)
+
+om.split.u <- survSplit( Surv(Days, Status) ~ ., data = icu_sub2uc, cut=c(365, 730), episode= "tgroup")
+coxmod_strata_u <- coxph(Surv(Days, Status) ~ Age + HR_max:strata(tgroup) + SaO2_max + Temp_max + HCT_max + Creatinine_max + Na_max, data=om.split.u)
+#cox.zph(coxmod_strata_u)
+show_simple_sum(coxmod_strata_u)
+```
+
+With only $n=30$ observations without missing values, this model is
+unreliable. Indeed, most of the model coefficients have lost
+significance with the exception of `HR_max` for `Days` \>730. However,
+it is worth noting the direction of influence has flipped compared to
+the original model (OR 1.1 vs. 0.99) with $n=1608$. We would recommend
+not making any inferences from this model.
